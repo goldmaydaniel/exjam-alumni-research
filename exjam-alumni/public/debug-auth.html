@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug Auth State</title>
+    <style>
+      body {
+        font-family: monospace;
+        padding: 20px;
+        background: #1a1a1a;
+        color: #0f0;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #0ff;
+      }
+      .status {
+        background: #000;
+        padding: 20px;
+        border: 1px solid #0f0;
+        border-radius: 4px;
+        margin: 20px 0;
+        white-space: pre-wrap;
+      }
+      button {
+        background: #0f0;
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+        font-family: monospace;
+        font-weight: bold;
+      }
+      button:hover {
+        background: #0ff;
+      }
+      .error {
+        color: #f00;
+      }
+      .success {
+        color: #0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔍 Debug Auth State</h1>
+
+      <div class="status" id="authState">Loading auth state...</div>
+
+      <div>
+        <button onclick="checkAuth()">Check Auth State</button>
+        <button onclick="checkLocalStorage()">Check LocalStorage</button>
+        <button onclick="initializeAuth()">Initialize Auth</button>
+        <button onclick="clearAuth()">Clear Auth</button>
+        <button onclick="testLogin()">Test Login</button>
+      </div>
+
+      <div class="status" id="output">Ready for debugging...</div>
+    </div>
+
+    <script type="module">
+      // Import Supabase client
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+      const supabaseUrl = "https://yzrzjagkkycmdwuhrvww.supabase.co";
+      const supabaseAnonKey =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6cnpqYWdra3ljbWR3dWhydnd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5MTc2MzksImV4cCI6MjA3MTQ5MzYzOX0.p_S5zIZHE9fBDL4ZiP-NZd8vDKIyHvfxje4WqaE-KoA";
+
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+      window.checkAuth = async function () {
+        const output = document.getElementById("output");
+        try {
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession();
+
+          if (error) {
+            output.innerHTML = `<span class="error">Error getting session: ${error.message}</span>`;
+            return;
+          }
+
+          if (session) {
+            output.innerHTML = `<span class="success">✅ Session found!
+User ID: ${session.user.id}
+Email: ${session.user.email}
+Access Token: ${session.access_token ? "Present" : "Missing"}
+Expires: ${new Date(session.expires_at * 1000).toLocaleString()}</span>`;
+          } else {
+            output.innerHTML = `<span class="error">❌ No session found</span>`;
+          }
+        } catch (err) {
+          output.innerHTML = `<span class="error">Error: ${err.message}</span>`;
+        }
+      };
+
+      window.checkLocalStorage = function () {
+        const output = document.getElementById("output");
+        const authData = localStorage.getItem("consolidated-auth");
+        const supabaseAuth = localStorage.getItem("sb-yzrzjagkkycmdwuhrvww-auth-token");
+
+        let result = "LocalStorage Data:\n\n";
+
+        if (authData) {
+          try {
+            const parsed = JSON.parse(authData);
+            result += "consolidated-auth:\n" + JSON.stringify(parsed, null, 2) + "\n\n";
+          } catch (e) {
+            result += "consolidated-auth: Invalid JSON\n\n";
+          }
+        } else {
+          result += "consolidated-auth: Not found\n\n";
+        }
+
+        if (supabaseAuth) {
+          try {
+            const parsed = JSON.parse(supabaseAuth);
+            result += "Supabase auth token:\n" + JSON.stringify(parsed, null, 2);
+          } catch (e) {
+            result += "Supabase auth token: Invalid JSON";
+          }
+        } else {
+          result += "Supabase auth token: Not found";
+        }
+
+        output.textContent = result;
+      };
+
+      window.initializeAuth = async function () {
+        const output = document.getElementById("output");
+        output.innerHTML = "Initializing auth...";
+
+        try {
+          // Check if we have a session
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession();
+
+          if (error) {
+            output.innerHTML = `<span class="error">Failed to initialize: ${error.message}</span>`;
+            return;
+          }
+
+          if (session) {
+            output.innerHTML = `<span class="success">✅ Auth initialized with existing session</span>`;
+          } else {
+            output.innerHTML = `<span class="success">✅ Auth initialized (no session)</span>`;
+          }
+
+          // Update the auth state display
+          updateAuthState();
+        } catch (err) {
+          output.innerHTML = `<span class="error">Error: ${err.message}</span>`;
+        }
+      };
+
+      window.clearAuth = async function () {
+        const output = document.getElementById("output");
+
+        try {
+          await supabase.auth.signOut();
+          localStorage.removeItem("consolidated-auth");
+          localStorage.removeItem("sb-yzrzjagkkycmdwuhrvww-auth-token");
+
+          output.innerHTML = `<span class="success">✅ Auth cleared successfully</span>`;
+          updateAuthState();
+        } catch (err) {
+          output.innerHTML = `<span class="error">Error clearing auth: ${err.message}</span>`;
+        }
+      };
+
+      window.testLogin = async function () {
+        const output = document.getElementById("output");
+        output.innerHTML = "Testing login...";
+
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: "demo@exjamalumni.org",
+            password: "Demo123456!",
+          });
+
+          if (error) {
+            output.innerHTML = `<span class="error">Login failed: ${error.message}</span>`;
+            return;
+          }
+
+          output.innerHTML = `<span class="success">✅ Login successful!
+User: ${data.user.email}
+Session: ${data.session ? "Created" : "Not created"}</span>`;
+
+          updateAuthState();
+        } catch (err) {
+          output.innerHTML = `<span class="error">Error: ${err.message}</span>`;
+        }
+      };
+
+      function updateAuthState() {
+        const authState = document.getElementById("authState");
+        const consolidated = localStorage.getItem("consolidated-auth");
+
+        if (consolidated) {
+          try {
+            const parsed = JSON.parse(consolidated);
+            authState.innerHTML = `Auth Store State:
+isLoading: ${parsed.state?.isLoading ?? "undefined"}
+isAuthenticated: ${parsed.state?.isAuthenticated ?? "undefined"}
+user: ${parsed.state?.user ? parsed.state.user.email : "null"}
+error: ${parsed.state?.error ?? "null"}`;
+          } catch (e) {
+            authState.innerHTML = "Failed to parse auth state";
+          }
+        } else {
+          authState.innerHTML = "No auth state in localStorage";
+        }
+      }
+
+      // Initial load
+      updateAuthState();
+      checkAuth();
+    </script>
+  </body>
+</html>

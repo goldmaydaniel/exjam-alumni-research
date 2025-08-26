@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test - AFMS Registration</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1e3c72;
+        }
+        .header h1 {
+            color: #1e3c72;
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .header p {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 1.2rem;
+        }
+        .test-buttons {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #1e3c72;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2a5298;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .form-display {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        .form-display h3 {
+            color: #1e3c72;
+            margin-top: 0;
+            border-bottom: 2px solid #1e3c72;
+            padding-bottom: 10px;
+        }
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .field {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .field-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .field-value {
+            color: #1e3c72;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .photo-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .photo-display img {
+            max-width: 200px;
+            border-radius: 10px;
+            border: 3px solid #1e3c72;
+        }
+        .success-section {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .success-section h3 {
+            color: #155724;
+            margin-top: 0;
+        }
+        .print-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .hidden {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .field-row {
+                grid-template-columns: 1fr;
+            }
+            .print-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Simple Test Page</h1>
+            <p>AFMS Alumni Registration - Test Mode</p>
+        </div>
+
+        <div class="test-buttons">
+            <button class="btn btn-primary" onclick="fillTestData()">
+                🧪 Fill Test Data
+            </button>
+            <button class="btn btn-secondary" onclick="clearData()">
+                🗑️ Clear Data
+            </button>
+            <button class="btn btn-success" onclick="showSuccess()">
+                🎉 Show Success
+            </button>
+        </div>
+
+        <!-- Form Data Display -->
+        <div class="form-display" id="formDisplay">
+            <h3>📝 Form Data (Will appear when filled)</h3>
+            <p>Click "Fill Test Data" to populate this section</p>
+        </div>
+
+        <!-- Success Section -->
+        <div class="success-section hidden" id="successSection">
+            <h3>🎉 Registration Successful!</h3>
+            <p>Thank you for registering for the AFMS Alumni Homecoming Event!</p>
+            
+            <div class="print-actions">
+                <button class="btn btn-primary" onclick="printBadge()">
+                    🖨️ Print Event Badge
+                </button>
+                <button class="btn btn-secondary" onclick="printWelcome()">
+                    📄 Print Welcome Message
+                </button>
+            </div>
+        </div>
+
+        <!-- Hidden Print Content -->
+        <div id="printContent" class="hidden">
+            <!-- Event Badge -->
+            <div id="eventBadge" class="hidden">
+                <div style="background: white; padding: 40px; text-align: center; border: 3px solid #1e3c72; border-radius: 15px; max-width: 600px; margin: 20px auto;">
+                    <div style="border-bottom: 3px solid #1e3c72; padding-bottom: 20px; margin-bottom: 25px;">
+                        <h1 style="color: #1e3c72; margin: 0; font-size: 2.5rem;">AFMS Alumni Event</h1>
+                        <h2 style="color: #2a5298; margin: 10px 0 0 0; font-size: 1.8rem; font-style: italic;">2025 Homecoming</h2>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 25px; margin-bottom: 25px;">
+                        <div id="badgePhoto" style="width: 150px; height: 150px; background: #f8f9fa; border: 2px solid #1e3c72; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666;">
+                            Photo
+                        </div>
+                        <div style="flex: 1; text-align: left;">
+                            <h3 id="badgeName" style="color: #1e3c72; margin: 0 0 15px 0; font-size: 1.8rem;">Full Name</h3>
+                            <p id="badgeService" style="margin: 5px 0; color: #333; font-size: 1.1rem;"><strong>Service:</strong> XX/XXXX</p>
+                            <p id="badgeSquadron" style="margin: 5px 0; color: #333; font-size: 1.1rem;"><strong>Squadron:</strong> Squadron</p>
+                            <p id="badgeChapter" style="margin: 5px 0; color: #333; font-size: 1.1rem;"><strong>Chapter:</strong> Chapter</p>
+                            <p id="badgeRank" style="margin: 5px 0; color: #333; font-size: 1.1rem;"><strong>Rank:</strong> Rank</p>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 2px solid #e9ecef; padding-top: 20px; text-align: center;">
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem; font-weight: 500;">Event: November 28-30, 2025</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem; font-weight: 500;">Location: AFMS Campus, Nigeria</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem; font-weight: 500;">Theme: "Strive to Excel"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Welcome Message -->
+            <div id="welcomeMessage" class="hidden">
+                <div style="background: white; padding: 40px; border: 2px solid #1e3c72; border-radius: 15px; max-width: 600px; margin: 20px auto; font-family: 'Georgia', serif;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1e3c72; margin: 0; font-size: 2.2rem;">Welcome to AFMS Alumni Homecoming 2025!</h1>
+                        <p style="color: #2a5298; font-size: 1.2rem; font-style: italic; margin: 10px 0;">"Strive to Excel"</p>
+                    </div>
+                    
+                    <p style="font-size: 1.1rem; line-height: 1.6; color: #333; margin-bottom: 20px;">
+                        Dear <span id="welcomeName" style="font-weight: bold; color: #1e3c72;">Full Name</span>,
+                    </p>
+                    
+                    <p style="font-size: 1.1rem; line-height: 1.6; color: #333; margin-bottom: 20px;">
+                        On behalf of the AFMS Alumni Association, we are delighted to confirm your registration for the 2025 Alumni Homecoming Event. This historic gathering marks a new milestone in our association's journey.
+                    </p>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <h3 style="color: #1e3c72; margin-top: 0;">📋 Registration Details:</h3>
+                        <p style="margin: 5px 0;"><strong>Service Number:</strong> <span id="welcomeService">XX/XXXX</span></p>
+                        <p style="margin: 5px 0;"><strong>Squadron:</strong> <span id="welcomeSquadron">Squadron</span></p>
+                        <p style="margin: 5px 0;"><strong>Chapter:</strong> <span id="welcomeChapter">Chapter</span></p>
+                        <p style="margin: 5px 0;"><strong>Contact:</strong> <span id="welcomeContact">Contact Info</span></p>
+                    </div>
+                    
+                    <p style="font-size: 1.1rem; line-height: 1.6; color: #333; margin-bottom: 20px;">
+                        We look forward to welcoming you back to campus for three days of networking, learning, and celebration. Please check your email for additional event details and updates.
+                    </p>
+                    
+                    <p style="font-size: 1.1rem; line-height: 1.6; color: #333; margin-bottom: 20px;">
+                        Best regards,<br>
+                        <strong>AFMS Alumni Association Executive Committee</strong>
+                    </p>
+                    
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef;">
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">Event: November 28-30, 2025</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">Location: AFMS Campus, Nigeria</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">Questions? Contact: alumni@afms.edu.ng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test data
+        const testData = {
+            fullName: 'John Doe',
+            email: 'john.doe@example.com',
+            phone: '+234 801 234 5678',
+            location: 'Lagos, Nigeria',
+            serviceNumber: '94/1849',
+            setYear: '94',
+            serialNumber: '1849',
+            squadron: 'Alpha (Yellow)',
+            chapter: 'Lagos',
+            rank: 'Captain',
+            emergencyContact: 'Jane Doe',
+            emergencyPhone: '+234 801 234 5679',
+            emergencyRelationship: 'Spouse',
+            preferredContact: 'Email',
+            notes: 'No special requirements.',
+            photo: null
+        };
+
+        function fillTestData() {
+            console.log('=== FILLING TEST DATA ===');
+            
+            // Create test photo
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#1e3c72';
+            ctx.fillRect(0, 0, 200, 200);
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Test Photo', 100, 100);
+            ctx.fillText('John Doe', 100, 130);
+            
+            testData.photo = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Display form data
+            displayFormData();
+            
+            console.log('✅ Test data filled and displayed');
+        }
+
+        function displayFormData() {
+            const formDisplay = document.getElementById('formDisplay');
+            
+            formDisplay.innerHTML = `
+                <h3>📝 Form Data</h3>
+                
+                <div class="field-row">
+                    <div class="field">
+                        <div class="field-label">Full Name</div>
+                        <div class="field-value">${testData.fullName}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Email</div>
+                        <div class="field-value">${testData.email}</div>
+                    </div>
+                </div>
+                
+                <div class="field-row">
+                    <div class="field">
+                        <div class="field-label">Phone</div>
+                        <div class="field-value">${testData.phone}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Location</div>
+                        <div class="field-value">${testData.location}</div>
+                    </div>
+                </div>
+                
+                <div class="field-row">
+                    <div class="field">
+                        <div class="field-label">Service Number</div>
+                        <div class="field-value">${testData.serviceNumber}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Squadron</div>
+                        <div class="field-value">${testData.squadron}</div>
+                    </div>
+                </div>
+                
+                <div class="field-row">
+                    <div class="field">
+                        <div class="field-label">Chapter</div>
+                        <div class="field-value">${testData.chapter}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Rank</div>
+                        <div class="field-value">${testData.rank}</div>
+                    </div>
+                </div>
+                
+                <div class="field-row">
+                    <div class="field">
+                        <div class="field-label">Emergency Contact</div>
+                        <div class="field-value">${testData.emergencyContact} (${testData.emergencyRelationship})</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Emergency Phone</div>
+                        <div class="field-value">${testData.emergencyPhone}</div>
+                    </div>
+                </div>
+                
+                <div class="field-row">
+                    <div class="field">
+                        <div class="field-label">Preferred Contact</div>
+                        <div class="field-value">${testData.preferredContact}</div>
+                    </div>
+                    <div class="field">
+                        <div class="field-label">Notes</div>
+                        <div class="field-value">${testData.notes}</div>
+                    </div>
+                </div>
+                
+                <div class="photo-display">
+                    <h4>📸 Profile Photo</h4>
+                    <img src="${testData.photo}" alt="Test Photo" id="displayPhoto">
+                </div>
+            `;
+        }
+
+        function clearData() {
+            console.log('=== CLEARING DATA ===');
+            
+            const formDisplay = document.getElementById('formDisplay');
+            formDisplay.innerHTML = `
+                <h3>📝 Form Data (Will appear when filled)</h3>
+                <p>Click "Fill Test Data" to populate this section</p>
+            `;
+            
+            const successSection = document.getElementById('successSection');
+            successSection.classList.add('hidden');
+            
+            console.log('✅ Data cleared');
+        }
+
+        function showSuccess() {
+            console.log('=== SHOWING SUCCESS ===');
+            
+            // Populate print content
+            populatePrintContent();
+            
+            // Show success section
+            const successSection = document.getElementById('successSection');
+            successSection.classList.remove('hidden');
+            
+            console.log('✅ Success section shown');
+        }
+
+        function populatePrintContent() {
+            console.log('=== POPULATING PRINT CONTENT ===');
+            
+            // Populate badge
+            document.getElementById('badgeName').textContent = testData.fullName;
+            document.getElementById('badgeService').textContent = `Service: ${testData.serviceNumber}`;
+            document.getElementById('badgeSquadron').textContent = `Squadron: ${testData.squadron}`;
+            document.getElementById('badgeChapter').textContent = `Chapter: ${testData.chapter}`;
+            document.getElementById('badgeRank').textContent = `Rank: ${testData.rank}`;
+            
+            if (testData.photo) {
+                document.getElementById('badgePhoto').innerHTML = `<img src="${testData.photo}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
+            }
+            
+            // Populate welcome message
+            document.getElementById('welcomeName').textContent = testData.fullName;
+            document.getElementById('welcomeService').textContent = testData.serviceNumber;
+            document.getElementById('welcomeSquadron').textContent = testData.squadron;
+            document.getElementById('welcomeChapter').textContent = testData.chapter;
+            document.getElementById('welcomeContact').textContent = `${testData.email} | ${testData.phone}`;
+            
+            console.log('✅ Print content populated');
+        }
+
+        function printBadge() {
+            console.log('=== PRINTING BADGE ===');
+            
+            const printContent = document.getElementById('printContent');
+            const eventBadge = document.getElementById('eventBadge');
+            
+            printContent.style.display = 'block';
+            eventBadge.style.display = 'block';
+            
+            setTimeout(() => {
+                window.print();
+                printContent.style.display = 'none';
+                eventBadge.style.display = 'none';
+            }, 100);
+        }
+
+        function printWelcome() {
+            console.log('=== PRINTING WELCOME MESSAGE ===');
+            
+            const printContent = document.getElementById('printContent');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
+            printContent.style.display = 'block';
+            welcomeMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                window.print();
+                printContent.style.display = 'none';
+                welcomeMessage.style.display = 'none';
+            }, 100);
+        }
+
+        console.log('=== SIMPLE TEST PAGE LOADED ===');
+        console.log('This page bypasses the complex multi-step form logic');
+        console.log('Use the buttons to test functionality step by step');
+    </script>
+</body>
+</html>

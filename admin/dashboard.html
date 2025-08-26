@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExJAM Admin Dashboard - Alumni Research Management</title>
+    <link rel="icon" type="image/svg+xml" href="../html-registration/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="../html-registration/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="../html-registration/logo.svg" alt="ExJAM Logo" onerror="this.src='../html-registration/logo.png'">
+                    <span>ExJAM Admin</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#registrations" class="nav-item" data-section="registrations">
+                    <i class="fas fa-users"></i>
+                    <span>Registrations</span>
+                    <span class="badge" id="newRegCount">0</span>
+                </a>
+                <a href="#analytics" class="nav-item" data-section="analytics">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#alumni" class="nav-item" data-section="alumni">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Alumni Profiles</span>
+                </a>
+                <a href="#surveys" class="nav-item" data-section="surveys">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Surveys</span>
+                </a>
+                <a href="#reports" class="nav-item" data-section="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="#notifications" class="nav-item" data-section="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <img src="https://via.placeholder.com/40" alt="Admin" class="user-avatar">
+                    <div class="user-details">
+                        <span class="user-name" id="adminName">Admin User</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="topbar-title">
+                    <h1 id="sectionTitle">Dashboard</h1>
+                    <span class="breadcrumb">ExJAM Admin / <span id="breadcrumbSection">Dashboard</span></span>
+                </div>
+                
+                <div class="topbar-actions">
+                    <button class="action-btn" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="action-btn" id="exportBtn">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <div class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-count" id="notificationCount">3</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total Registrations</h3>
+                            <p class="stat-number" id="totalRegistrations">0</p>
+                            <span class="stat-change positive">+12% from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Verified Alumni</h3>
+                            <p class="stat-number" id="verifiedAlumni">0</p>
+                            <span class="stat-change positive">+8% from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Pending Approval</h3>
+                            <p class="stat-number" id="pendingApproval">0</p>
+                            <span class="stat-change negative">3 urgent</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Survey Responses</h3>
+                            <p class="stat-number" id="surveyResponses">0</p>
+                            <span class="stat-change positive">+25% completion rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Registration Trends</h3>
+                            <select class="chart-filter">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 3 months</option>
+                            </select>
+                        </div>
+                        <canvas id="registrationChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Alumni Distribution</h3>
+                            <button class="chart-action">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="activity-card">
+                    <div class="card-header">
+                        <h3>Recent Activity</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="activity-list" id="activityList">
+                        <!-- Activity items will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Registrations Section -->
+            <section id="registrations" class="content-section">
+                <div class="section-header">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search registrations..." id="searchRegistrations">
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <select class="filter-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                        
+                        <select class="filter-select" id="batchFilter">
+                            <option value="">All Batches</option>
+                            <option value="2020">2020</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                        </select>
+                        
+                        <button class="btn btn-primary" id="addRegistrationBtn">
+                            <i class="fas fa-plus"></i> Add Registration
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="registrationsTable">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Batch</th>
+                                <th>Status</th>
+                                <th>Registration Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrationsTableBody">
+                            <!-- Table rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <button class="page-btn" id="prevPage">Previous</button>
+                    <div class="page-numbers" id="pageNumbers">
+                        <!-- Page numbers will be populated here -->
+                    </div>
+                    <button class="page-btn" id="nextPage">Next</button>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="content-section">
+                <div class="analytics-header">
+                    <div class="date-range-picker">
+                        <i class="fas fa-calendar"></i>
+                        <input type="date" id="startDate">
+                        <span>to</span>
+                        <input type="date" id="endDate">
+                        <button class="btn btn-secondary" id="applyDateRange">Apply</button>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h4>Engagement Rate</h4>
+                        <div class="metric-value">78%</div>
+                        <div class="metric-chart">
+                            <canvas id="engagementMiniChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h4>Response Time</h4>
+                        <div class="metric-value">2.4h</div>
+                        <div class="metric-chart">
+                            <canvas id="responseTimeMiniChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h4>Completion Rate</h4>
+                        <div class="metric-value">92%</div>
+                        <div class="metric-chart">
+                            <canvas id="completionMiniChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-charts">
+                    <div class="large-chart-card">
+                        <h3>Alumni Engagement Over Time</h3>
+                        <canvas id="engagementChart"></canvas>
+                    </div>
+                    
+                    <div class="split-charts">
+                        <div class="chart-card">
+                            <h3>Geographic Distribution</h3>
+                            <canvas id="geoChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Career Fields</h3>
+                            <canvas id="careerChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alumni Profiles Section -->
+            <section id="alumni" class="content-section">
+                <div class="profiles-grid" id="alumniProfiles">
+                    <!-- Alumni profile cards will be populated here -->
+                </div>
+            </section>
+
+            <!-- Surveys Section -->
+            <section id="surveys" class="content-section">
+                <div class="surveys-header">
+                    <button class="btn btn-primary" id="createSurveyBtn">
+                        <i class="fas fa-plus"></i> Create Survey
+                    </button>
+                </div>
+                
+                <div class="surveys-list" id="surveysList">
+                    <!-- Survey items will be populated here -->
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="content-section">
+                <div class="reports-header">
+                    <h3>Generate Reports</h3>
+                    <div class="report-options">
+                        <select id="reportType">
+                            <option>Registration Report</option>
+                            <option>Alumni Analytics</option>
+                            <option>Survey Results</option>
+                            <option>Annual Summary</option>
+                        </select>
+                        
+                        <select id="reportFormat">
+                            <option>PDF</option>
+                            <option>CSV</option>
+                            <option>Excel</option>
+                        </select>
+                        
+                        <button class="btn btn-primary" id="generateReportBtn">
+                            <i class="fas fa-file-export"></i> Generate
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="recent-reports">
+                    <h3>Recent Reports</h3>
+                    <div class="reports-list" id="reportsList">
+                        <!-- Report items will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications Section -->
+            <section id="notifications" class="content-section">
+                <div class="notifications-settings">
+                    <h3>Email Notifications</h3>
+                    
+                    <div class="notification-form">
+                        <div class="form-group">
+                            <label>Template Type</label>
+                            <select id="notificationType">
+                                <option>Welcome Email</option>
+                                <option>Approval Notification</option>
+                                <option>Survey Invitation</option>
+                                <option>Event Reminder</option>
+                                <option>Custom Message</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Recipients</label>
+                            <select id="recipientGroup">
+                                <option>All Alumni</option>
+                                <option>Pending Registrations</option>
+                                <option>Verified Alumni</option>
+                                <option>Specific Batch</option>
+                                <option>Custom Selection</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" id="emailSubject" placeholder="Enter email subject">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea id="emailMessage" rows="10" placeholder="Enter your message here..."></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn btn-secondary" id="previewEmailBtn">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button class="btn btn-primary" id="sendEmailBtn">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="email-history">
+                    <h3>Email History</h3>
+                    <div class="history-list" id="emailHistory">
+                        <!-- Email history items will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="content-section">
+                <div class="settings-tabs">
+                    <button class="tab-btn active" data-tab="general">General</button>
+                    <button class="tab-btn" data-tab="security">Security</button>
+                    <button class="tab-btn" data-tab="integration">Integration</button>
+                    <button class="tab-btn" data-tab="backup">Backup</button>
+                </div>
+                
+                <div class="settings-content">
+                    <div class="tab-content active" id="general-tab">
+                        <h3>General Settings</h3>
+                        <div class="settings-form">
+                            <div class="form-group">
+                                <label>Organization Name</label>
+                                <input type="text" value="ExJAM Alumni Association">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Admin Email</label>
+                                <input type="email" value="admin@exjam.org">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Time Zone</label>
+                                <select>
+                                    <option>UTC</option>
+                                    <option>EST</option>
+                                    <option>PST</option>
+                                    <option>IST</option>
+                                </select>
+                            </div>
+                            
+                            <button class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="security-tab">
+                        <h3>Security Settings</h3>
+                        <div class="settings-form">
+                            <div class="form-group">
+                                <label>Two-Factor Authentication</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="2fa">
+                                    <label for="2fa"></label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Session Timeout (minutes)</label>
+                                <input type="number" value="30">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Password Policy</label>
+                                <select>
+                                    <option>Standard</option>
+                                    <option>Strong</option>
+                                    <option>Very Strong</option>
+                                </select>
+                            </div>
+                            
+                            <button class="btn btn-primary">Update Security</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="integration-tab">
+                        <h3>Integration Settings</h3>
+                        <div class="integration-list">
+                            <div class="integration-item">
+                                <img src="https://www.google.com/favicon.ico" alt="Google">
+                                <div class="integration-info">
+                                    <h4>Google Sheets</h4>
+                                    <p>Connected</p>
+                                </div>
+                                <button class="btn btn-secondary">Configure</button>
+                            </div>
+                            
+                            <div class="integration-item">
+                                <i class="fas fa-envelope"></i>
+                                <div class="integration-info">
+                                    <h4>Email Service</h4>
+                                    <p>Not configured</p>
+                                </div>
+                                <button class="btn btn-primary">Setup</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="backup-tab">
+                        <h3>Backup & Export</h3>
+                        <div class="backup-options">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-database"></i> Backup Database
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-download"></i> Export All Data
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-history"></i> View Backup History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="login-form">
+                <h2>Admin Login</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Admin JavaScript -->
+    <script src="admin-script.js"></script>
+</body>
+</html>

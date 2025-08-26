@@ -1,0 +1,335 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Event {
+  id               String         @id
+  title            String
+  description      String?
+  shortDescription String?
+  startDate        DateTime
+  endDate          DateTime
+  venue            String
+  address          String?
+  capacity         Int
+  price            Decimal        @db.Decimal(10,2)
+  earlyBirdPrice   Decimal?       @db.Decimal(10,2)
+  earlyBirdDeadline DateTime?
+  imageUrl         String?
+  status           EventStatus    @default(DRAFT)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  organizerId      String?
+  tags             String[]       @default([])
+  Organizer        User?          @relation("EventOrganizer", fields: [organizerId], references: [id])
+  Registration     Registration[]
+  Ticket           Ticket[]
+  Waitlist         Waitlist[]
+
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([organizerId])
+  @@index([createdAt])
+  @@index([status, startDate])
+  @@index([capacity])
+  @@index([venue])
+}
+
+model Payment {
+  id             String        @id
+  registrationId String        @unique
+  userId         String
+  amount         Decimal       @db.Decimal(10,2)
+  currency       String        @default("USD")
+  provider       String        @default("paystack")
+  reference      String        @unique
+  status         PaymentStatus @default(PENDING)
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  Registration   Registration  @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  User           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([reference])
+  @@index([status, createdAt])
+}
+
+model Registration {
+  id              String             @id
+  userId          String
+  eventId         String
+  ticketType      TicketType         @default(REGULAR)
+  status          RegistrationStatus @default(PENDING)
+  arrivalDate     DateTime?
+  departureDate   DateTime?
+  expectations    String?
+  specialRequests String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  photoUrl        String?
+  Payment         Payment?
+  Event           Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  User            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Ticket          Ticket?
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([eventId, status])
+  @@index([userId, status])
+  @@index([arrivalDate])
+  @@index([departureDate])
+}
+
+model Ticket {
+  id             String       @id
+  registrationId String       @unique
+  userId         String
+  eventId        String
+  ticketNumber   String       @unique
+  qrCode         String
+  checkedIn      Boolean      @default(false)
+  checkedInAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  Event          Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  Registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  User           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([ticketNumber])
+  @@index([checkedIn])
+  @@index([eventId, checkedIn])
+  @@index([checkedInAt])
+}
+
+model User {
+  id                      String         @id
+  email                   String         @unique
+  password                String
+  firstName               String
+  lastName                String
+  fullName                String?
+  serviceNumber           String?
+  set                     String?
+  squadron                Squadron?
+  phone                   String?
+  chapter                 String?
+  currentLocation         String?
+  emergencyContact        String?
+  graduationYear          String?
+  currentOccupation       String?
+  company                 String?
+  role                    UserRole       @default(GUEST_MEMBER)
+  emailVerified           Boolean        @default(false)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime
+  bio                     String?
+  emailVerificationExpiry DateTime?
+  emailVerificationToken  String?
+  lastLogin               DateTime?
+  profilePhoto            String?
+  profilePhotoPath        String?
+  status                  UserStatus     @default(ACTIVE)
+  AuditLog                AuditLog[]
+  Events                  Event[]        @relation("EventOrganizer")
+  Notification            Notification[]
+  Payment                 Payment[]
+  Registration            Registration[]
+  Ticket                  Ticket[]
+  Waitlist                Waitlist[]
+
+  @@index([email])
+  @@index([serviceNumber])
+  @@index([role])
+  @@index([status])
+  @@index([squadron])
+  @@index([createdAt])
+  @@index([lastLogin])
+  @@index([role, status])
+  @@index([squadron, status])
+  @@index([graduationYear])
+  @@index([currentLocation])
+  @@index([emailVerified])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  changes   Json?
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  User      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([timestamp])
+  @@index([entity, entityId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  data      Json?
+  createdAt DateTime         @default(now())
+  readAt    DateTime?
+  User      User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([createdAt])
+  @@index([userId, read])
+}
+
+model Waitlist {
+  id          String   @id @default(uuid())
+  userId      String
+  eventId     String
+  position    Int
+  status      WaitlistStatus @default(ACTIVE)
+  ticketType  TicketType     @default(REGULAR)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  notifiedAt  DateTime?
+  convertedAt DateTime?
+  
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
+  @@index([position])
+  @@index([eventId, status, position])
+  @@index([createdAt])
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  WAITLISTED
+}
+
+enum Squadron {
+  GREEN
+  RED
+  PURPLE
+  YELLOW
+  DORNIER
+  PUMA
+}
+
+enum TicketType {
+  REGULAR
+  VIP
+  STUDENT
+}
+
+enum UserRole {
+  GUEST_MEMBER      // Non-verified member, can register for events only
+  VERIFIED_MEMBER   // Verified alumni, full platform access
+  ATTENDEE          // Event attendee (legacy support)
+  SPEAKER
+  ORGANIZER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum NotificationType {
+  EVENT_REMINDER
+  PAYMENT_CONFIRMATION
+  REGISTRATION_CONFIRMED
+  EVENT_CANCELLED
+  EVENT_UPDATED
+  SYSTEM_ANNOUNCEMENT
+  ADMIN_MESSAGE
+  WAITLIST_NOTIFICATION
+  WAITLIST_CONVERTED
+}
+
+enum WaitlistStatus {
+  ACTIVE
+  CONVERTED
+  EXPIRED
+  CANCELLED
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  status    String   @default("pending") // pending, read, replied
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+model SiteConfig {
+  id               Int      @id @default(1)
+  site_name        String   @default("ExJAM Alumni Association")
+  main_logo_url    String?
+  footer_logo_url  String?
+  favicon_url      String?
+  primary_color    String?  @default("#1e40af")
+  secondary_color  String?  @default("#3b82f6")
+  hero_title       String?  @default("Welcome to ExJAM Alumni")
+  hero_subtitle    String?  @default("Connecting Nigerian Air Force Academy Alumni")
+  contact_email    String?
+  contact_phone    String?
+  social_facebook  String?
+  social_twitter   String?
+  social_linkedin  String?
+  social_instagram String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  @@map("site_config")
+}

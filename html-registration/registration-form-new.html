@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFMS Alumni Registration - Simple & Reliable</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .progress-step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            position: relative;
+            z-index: 2;
+        }
+
+        .progress-step.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .progress-step.completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: #e9ecef;
+            z-index: 1;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #1e3c72;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .form-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            color: #1e3c72;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .form-group.required label::after {
+            content: " *";
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px 18px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1e3c72;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(30, 60, 114, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .service-number-group {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 15px;
+            align-items: end;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+
+        .service-number-separator {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e3c72;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .field-help {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .camera-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .camera-controls {
+            margin: 15px 0;
+        }
+
+        .camera-controls button {
+            margin: 0 10px;
+        }
+
+        #camera, #photoCanvas {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .btn-primary {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2a5298;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .navigation {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .test-buttons {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .service-number-group {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .service-number-separator {
+                display: none;
+            }
+            
+            .btn {
+                margin: 5px;
+                width: 100%;
+            }
+            
+            .success-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AFMS Alumni Registration</h1>
+            <p>Join us for the 2025 Alumni Homecoming Event</p>
+        </div>
+
+        <div class="form-container">
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-line">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-step active" data-step="1">1</div>
+                <div class="progress-step" data-step="2">2</div>
+                <div class="progress-step" data-step="3">3</div>
+                <div class="progress-step" data-step="4">4</div>
+            </div>
+
+            <!-- Test Buttons -->
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="fillTestData()">
+                    🧪 Fill Test Data
+                </button>
+                <button class="btn btn-secondary" onclick="clearForm()">
+                    🗑️ Clear Form
+                </button>
+                <small style="display: block; margin-top: 10px; color: #856404;">
+                    Use these to quickly test the form functionality
+                </small>
+            </div>
+
+            <!-- Form Sections -->
+            <div class="form-section active" id="section1">
+                <h2 class="section-title">Personal Information</h2>
+                
+                <div class="form-group required">
+                    <label for="fullName">Full Name (as it appears on official documents)</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="Enter your full legal name" required>
+                    <div class="field-help">Please use your complete legal name as it appears on your official documents</div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                        <div class="field-help">We'll use this to send you event updates and confirmation</div>
+                    </div>
+                    
+                    <div class="form-group required">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+234 801 234 5678" required>
+                        <div class="field-help">Include country code (e.g., +234 for Nigeria)</div>
+                    </div>
+                </div>
+                
+                <div class="form-group required">
+                    <label for="location">Current Location</label>
+                    <input type="text" id="location" name="location" placeholder="City, State/Province, Country" required>
+                    <div class="field-help">Your current residence for planning and logistics</div>
+                </div>
+            </div>
+
+            <div class="form-section" id="section2">
+                <h2 class="section-title">Service Details</h2>
+                
+                <div class="form-group required">
+                    <label for="serviceNumber">Service Number</label>
+                    <div class="service-number-group">
+                        <div class="form-group">
+                            <label for="setYear">Set/Year (2 digits)</label>
+                            <input type="number" id="setYear" name="setYear" min="0" max="99" placeholder="94" required>
+                            <div class="field-help">Last 2 digits of year (e.g., 94 for 1994, 05 for 2005)</div>
+                        </div>
+                        
+                        <div class="service-number-separator">/</div>
+                        
+                        <div class="form-group">
+                            <label for="serialNumber">Serial Number (1-4 digits)</label>
+                            <input type="number" id="serialNumber" name="serialNumber" min="1" max="9999" placeholder="1849" required>
+                            <div class="field-help">Your unique serial number (1 to 9999)</div>
+                        </div>
+                    </div>
+                    
+                    <div id="serviceNumberDisplay" style="display: none; margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px; text-align: center; font-weight: bold; color: #1e3c72; font-size: 1.2rem;"></div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="squadron">Squadron</label>
+                        <select id="squadron" name="squadron" required>
+                            <option value="">Select your squadron</option>
+                            <option value="Alpha">Alpha (Yellow)</option>
+                            <option value="Bravo">Bravo (Red)</option>
+                            <option value="Charlie">Charlie (Blue)</option>
+                            <option value="Delta">Delta (Green)</option>
+                            <option value="Echo">Echo (Purple)</option>
+                            <option value="Foxtrot">Foxtrot (Orange)</option>
+                        </select>
+                        <div class="field-help">Your assigned squadron during training</div>
+                    </div>
+                    
+                    <div class="form-group required">
+                        <label for="chapter">Chapter</label>
+                        <select id="chapter" name="chapter" required>
+                            <option value="">Select your chapter</option>
+                            <option value="Lagos">Lagos</option>
+                            <option value="Abuja">Abuja</option>
+                            <option value="Kano">Kano</option>
+                            <option value="Port Harcourt">Port Harcourt</option>
+                            <option value="Kaduna">Kaduna</option>
+                            <option value="Enugu">Enugu</option>
+                            <option value="Ibadan">Ibadan</option>
+                            <option value="Maiduguri">Maiduguri</option>
+                            <option value="Calabar">Calabar</option>
+                            <option value="Jos">Jos</option>
+                        </select>
+                        <div class="field-help">Your local alumni chapter</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="rank">Rank (Optional)</label>
+                    <select id="rank" name="rank">
+                        <option value="">Select your rank (if applicable)</option>
+                        <option value="Cadet">Cadet</option>
+                        <option value="Officer Cadet">Officer Cadet</option>
+                        <option value="Second Lieutenant">Second Lieutenant</option>
+                        <option value="Lieutenant">Lieutenant</option>
+                        <option value="Captain">Captain</option>
+                        <option value="Major">Major</option>
+                        <option value="Lieutenant Colonel">Lieutenant Colonel</option>
+                        <option value="Colonel">Colonel</option>
+                        <option value="Brigadier General">Brigadier General</option>
+                        <option value="Major General">Major General</option>
+                        <option value="Lieutenant General">Lieutenant General</option>
+                        <option value="General">General</option>
+                    </select>
+                    <div class="field-help">Your current or highest achieved rank</div>
+                </div>
+            </div>
+
+            <div class="form-section" id="section3">
+                <h2 class="section-title">Contact & Emergency Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="emergencyContact">Emergency Contact Name</label>
+                        <input type="text" id="emergencyContact" name="emergencyContact" placeholder="Full name of emergency contact" required>
+                        <div class="field-help">Person to contact in case of emergency</div>
+                    </div>
+                    
+                    <div class="form-group required">
+                        <label for="emergencyPhone">Emergency Contact Phone</label>
+                        <input type="tel" id="emergencyPhone" name="emergencyPhone" placeholder="+234 801 234 5679" required>
+                        <div class="field-help">Phone number for emergency contact</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="emergencyRelationship">Relationship to Emergency Contact</label>
+                        <select id="emergencyRelationship" name="emergencyRelationship">
+                            <option value="">Select relationship</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Parent">Parent</option>
+                            <option value="Sibling">Sibling</option>
+                            <option value="Child">Child</option>
+                            <option value="Friend">Friend</option>
+                            <option value="Colleague">Colleague</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <div class="field-help">Your relationship to the emergency contact</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="preferredContact">Preferred Contact Method</label>
+                        <select id="preferredContact" name="preferredContact">
+                            <option value="">Select preference</option>
+                            <option value="Email">Email</option>
+                            <option value="Phone">Phone</option>
+                            <option value="SMS">SMS</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                        </select>
+                        <div class="field-help">How you prefer to be contacted</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Additional Notes (Optional)</label>
+                    <textarea id="notes" name="notes" rows="4" placeholder="Any special requirements, dietary restrictions, accessibility needs, or other information you'd like us to know"></textarea>
+                    <div class="field-help">Any additional information that might be helpful</div>
+                </div>
+            </div>
+
+            <div class="form-section" id="section4">
+                <h2 class="section-title">Profile Photo</h2>
+                
+                <div class="camera-container">
+                    <p style="margin-bottom: 20px; color: #666; text-align: center;">
+                        📸 Please capture a clear photo of yourself for your event badge
+                    </p>
+                    
+                    <video id="camera" autoplay playsinline style="display: none;"></video>
+                    <canvas id="photoCanvas" style="display: none;"></canvas>
+                    
+                    <div class="camera-controls">
+                        <button type="button" id="startCamera" class="btn btn-primary">
+                            📷 Start Camera
+                        </button>
+                        <button type="button" id="capturePhoto" class="btn btn-success" style="display: none;">
+                            📸 Capture Photo
+                        </button>
+                        <button type="button" id="retakePhoto" class="btn btn-secondary" style="display: none;">
+                            🔄 Retake Photo
+                        </button>
+                    </div>
+                    
+                    <input type="hidden" id="photoData" name="photoData">
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="navigation">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousSection()" style="display: none;">← Previous</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextSection()">Next →</button>
+                <button class="btn btn-success" id="submitBtn" onclick="submitForm()" style="display: none;">Submit Registration</button>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <h2 style="color: #155724; margin-bottom: 20px;">🎉 Registration Successful!</h2>
+            <p style="font-size: 1.1rem; color: #155724; margin-bottom: 30px;">
+                Thank you for registering for the AFMS Alumni Homecoming Event!<br>
+                We look forward to welcoming you back to campus.
+            </p>
+            
+            <!-- Payment Section -->
+            <div style="background: #e3f2fd; padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #2196f3;">
+                <h3 style="color: #1976d2; margin-top: 0; margin-bottom: 20px;">💳 Complete Your Registration</h3>
+                <p style="color: #1565c0; margin-bottom: 20px;">Registration Fee: <strong>₦25,000</strong> (Twenty-Five Thousand Naira)</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="payWithFlutterwave()" style="width: 100%;">
+                        🚀 Pay with Flutterwave
+                    </button>
+                    <button class="btn btn-secondary" onclick="showBankDetails()" style="width: 100%;">
+                        🏦 Bank Transfer
+                    </button>
+                    <button class="btn btn-success" onclick="showMobileMoney()" style="width: 100%;">
+                        📱 Mobile Money
+                    </button>
+                </div>
+                
+                <div id="paymentDetails" style="display: none; background: white; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: #1976d2; margin-top: 0;">Payment Instructions</h4>
+                    <div id="paymentInstructions"></div>
+                </div>
+            </div>
+            
+            <div class="success-actions">
+                <button class="btn btn-primary" onclick="printBadge()">
+                    🖨️ Print Event Badge
+                </button>
+                <button class="btn btn-secondary" onclick="printWelcome()">
+                    📄 Print Welcome Message
+                </button>
+                <button class="btn btn-success" onclick="shareEvent()">
+                    📤 Share Event Details
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    📝 New Registration
+                </button>
+            </div>
+        </div>
+
+        <!-- Hidden Print Content -->
+        <div id="printContent" class="hidden">
+            <!-- Event Badge -->
+            <div id="eventBadge" class="hidden">
+                <div style="background: white; padding: 40px; text-align: center; border: 3px solid #1e3c72; border-radius: 15px; max-width: 600px; margin: 20px auto;">
+                    <div style="border-bottom: 3px solid #1e3c72; padding-bottom: 20px; margin-bottom: 25px;">
+                        <h1 style="color: #1e3c72; margin: 0; font-size: 2.5rem;">AFMS Alumni Event</h1>
+                        <h2 style="color: #2a5298; margin: 10px 0 0 0; font-size: 1.8rem; font-style: italic;">2025 Homecoming</h2>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 25px; margin-bottom: 25px;">
+                        <div id="badgePhoto" style="width: 150px; height: 150px; background: #f8f9fa; border: 2px solid #1e3c72; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666;">
+                            Photo
+                        </div>
+                        <div style="flex: 1; text-align: left;">
+                            <h3 id="badgeName" style="color: #1e3c72; margin: 0 0 15px 0; font-size: 1.8rem;">Full Name</h3>
+                            <p id="badgeService" style="margin: 5px 0; color: #333; font-size: 1.1rem;"><strong>Service:</strong> XX/XXXX</p>
+                            <p id="badgeSquadron" style="margin: 5px 0; color: #333; font-size: 1.1rem;"><strong>Squadron:</strong> Squadron</p>
+                            <p id="badgeChapter" style="margin: 5px 0; color: #333; font-size: 1.1rem;"><strong>Chapter:</strong> Chapter</p>
+                            <p id="badgeRank" style="margin: 5px 0; color: #333; font-size: 1.1rem;"><strong>Rank:</strong> Rank</p>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Code Section -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <div style="text-align: left; flex: 1;">
+                            <h4 style="color: #1e3c72; margin: 0 0 10px 0;">Event Details</h4>
+                            <p style="margin: 5px 0; color: #333; font-size: 0.9rem;"><strong>Date:</strong> November 28-30, 2025</p>
+                            <p style="margin: 5px 0; color: #333; font-size: 0.9rem;"><strong>Location:</strong> AFMS Campus, Nigeria</p>
+                            <p style="margin: 5px 0; color: #333; font-size: 0.9rem;"><strong>Theme:</strong> "Strive to Excel"</p>
+                            <p style="margin: 5px 0; color: #333; font-size: 0.9rem;"><strong>Registration ID:</strong> <span id="badgeRegId">AFMS-2025-XXXX</span></p>
+                        </div>
+                        <div style="flex-shrink: 0; margin-left: 20px;">
+                            <div id="badgeQRCode" style="width: 100px; height: 100px; background: #f8f9fa; border: 2px solid #1e3c72; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666;">
+                                QR Code
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 2px solid #e9ecef; padding-top: 20px; text-align: center;">
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem; font-weight: 500;">Scan QR code for event details</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem; font-weight: 500;">Present this badge at event check-in</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Welcome Message -->
+            <div id="welcomeMessage" class="hidden">
+                <div style="background: white; padding: 40px; border: 2px solid #1e3c72; border-radius: 15px; max-width: 600px; margin: 20px auto; font-family: 'Georgia', serif;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1e3c72; margin: 0; font-size: 2.2rem;">Welcome to AFMS Alumni Homecoming 2025!</h1>
+                        <p style="color: #2a5298; font-size: 1.2rem; font-style: italic; margin: 10px 0;">"Strive to Excel"</p>
+                    </div>
+                    
+                    <p style="font-size: 1.1rem; line-height: 1.6; color: #333; margin-bottom: 20px;">
+                        Dear <span id="welcomeName" style="font-weight: bold; color: #1e3c72;">Full Name</span>,
+                    </p>
+                    
+                    <p style="font-size: 1.1rem; line-height: 1.6; color: #333; margin-bottom: 20px;">
+                        On behalf of the AFMS Alumni Association, we are delighted to confirm your registration for the 2025 Alumni Homecoming Event. This historic gathering marks a new milestone in our association's journey.
+                    </p>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <h3 style="color: #1e3c72; margin-top: 0;">📋 Registration Details:</h3>
+                        <p style="margin: 5px 0;"><strong>Service Number:</strong> <span id="welcomeService">XX/XXXX</span></p>
+                        <p style="margin: 5px 0;"><strong>Squadron:</strong> <span id="welcomeSquadron">Squadron</span></p>
+                        <p style="margin: 5px 0;"><strong>Chapter:</strong> <span id="welcomeChapter">Chapter</span></p>
+                        <p style="margin: 5px 0;"><strong>Contact:</strong> <span id="welcomeContact">Contact Info</span></p>
+                    </div>
+                    
+                    <p style="font-size: 1.1rem; line-height: 1.6; color: #333; margin-bottom: 20px;">
+                        We look forward to welcoming you back to campus for three days of networking, learning, and celebration. Please check your email for additional event details and updates.
+                    </p>
+                    
+                    <p style="font-size: 1.1rem; line-height: 1.6; color: #333; margin-bottom: 20px;">
+                        Best regards,<br>
+                        <strong>AFMS Alumni Association Executive Committee</strong>
+                    </p>
+                    
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef;">
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">Event: November 28-30, 2025</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">Location: AFMS Campus, Nigeria</p>
+                        <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">Questions? Contact: alumni@afms.edu.ng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSection = 1;
+        const totalSections = 4;
+        let stream = null;
+        let photoTaken = false;
+
+        // Initialize form
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== NEW REGISTRATION FORM LOADED ===');
+            setupCamera();
+            updateProgress();
+            updateNavigation();
+        });
+
+        // Navigation functions
+        function nextSection() {
+            if (validateCurrentSection()) {
+                if (currentSection < totalSections) {
+                    currentSection++;
+                    showSection(currentSection);
+                    updateProgress();
+                    updateNavigation();
+                }
+            }
+        }
+
+        function previousSection() {
+            if (currentSection > 1) {
+                currentSection--;
+                showSection(currentSection);
+                updateProgress();
+                updateNavigation();
+            }
+        }
+
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+            
+            // Show current section
+            document.getElementById(`section${section}`).classList.add('active');
+        }
+
+        function updateProgress() {
+            const progress = ((currentSection - 1) / (totalSections - 1)) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Update step indicators
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                const stepNumber = index + 1;
+                step.classList.remove('active', 'completed');
+                
+                if (stepNumber < currentSection) {
+                    step.classList.add('completed');
+                } else if (stepNumber === currentSection) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            prevBtn.style.display = currentSection > 1 ? 'inline-block' : 'none';
+            
+            if (currentSection === totalSections) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        // Validation functions
+        function validateCurrentSection() {
+            const currentSectionElement = document.getElementById(`section${currentSection}`);
+            const requiredFields = currentSectionElement.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.style.borderColor = '#e74c3c';
+                } else {
+                    field.style.borderColor = '#e1e5e9';
+                }
+            });
+            
+            // Special validation for service number
+            if (currentSection === 2) {
+                const setYear = document.getElementById('setYear').value;
+                const serialNumber = document.getElementById('serialNumber').value;
+                
+                if (setYear && serialNumber) {
+                    const yearNum = parseInt(setYear);
+                    if (isNaN(yearNum) || yearNum < 0 || yearNum > 99) {
+                        document.getElementById('setYear').style.borderColor = '#e74c3c';
+                        isValid = false;
+                    }
+                    
+                    const serialNum = parseInt(serialNumber);
+                    if (isNaN(serialNum) || serialNum < 1 || serialNum > 9999) {
+                        document.getElementById('serialNumber').style.borderColor = '#e74c3c';
+                        isValid = false;
+                    }
+                }
+            }
+            
+            // Special validation for photo
+            if (currentSection === 4) {
+                if (!photoTaken) {
+                    alert('Please capture a photo before proceeding.');
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+
+        // Service number display
+        document.getElementById('setYear').addEventListener('input', updateServiceNumberDisplay);
+        document.getElementById('serialNumber').addEventListener('input', updateServiceNumberDisplay);
+
+        function updateServiceNumberDisplay() {
+            const setYear = document.getElementById('setYear').value;
+            const serialNumber = document.getElementById('serialNumber').value;
+            const display = document.getElementById('serviceNumberDisplay');
+            
+            if (setYear && serialNumber) {
+                display.textContent = `Service Number: ${setYear}/${serialNumber}`;
+                display.style.display = 'block';
+            } else {
+                display.style.display = 'none';
+            }
+        }
+
+        // Camera functionality
+        function setupCamera() {
+            const startCameraBtn = document.getElementById('startCamera');
+            const capturePhotoBtn = document.getElementById('capturePhoto');
+            const retakePhotoBtn = document.getElementById('retakePhoto');
+            const camera = document.getElementById('camera');
+            const canvas = document.getElementById('photoCanvas');
+            
+            startCameraBtn.addEventListener('click', startCamera);
+            capturePhotoBtn.addEventListener('click', capturePhoto);
+            retakePhotoBtn.addEventListener('click', retakePhoto);
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
+                });
+                
+                const camera = document.getElementById('camera');
+                camera.srcObject = stream;
+                camera.style.display = 'block';
+                document.getElementById('photoCanvas').style.display = 'none';
+                
+                document.getElementById('startCamera').style.display = 'none';
+                document.getElementById('capturePhoto').style.display = 'inline-block';
+                document.getElementById('retakePhoto').style.display = 'none';
+                
+                photoTaken = false;
+                document.getElementById('photoData').value = '';
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Unable to access camera. Please ensure camera permissions are granted and try again.');
+            }
+        }
+
+        function capturePhoto() {
+            if (!stream) return;
+            
+            const camera = document.getElementById('camera');
+            const canvas = document.getElementById('photoCanvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = camera.videoWidth;
+            canvas.height = camera.videoHeight;
+            context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+            
+            const photoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('photoData').value = photoBase64;
+            
+            camera.style.display = 'none';
+            canvas.style.display = 'block';
+            
+            document.getElementById('capturePhoto').style.display = 'none';
+            document.getElementById('retakePhoto').style.display = 'inline-block';
+            
+            photoTaken = true;
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        function retakePhoto() {
+            const canvas = document.getElementById('photoCanvas');
+            canvas.style.display = 'none';
+            document.getElementById('photoData').value = '';
+            photoTaken = false;
+            
+            document.getElementById('startCamera').style.display = 'inline-block';
+            document.getElementById('capturePhoto').style.display = 'none';
+            document.getElementById('retakePhoto').style.display = 'none';
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        // Form submission
+        function submitForm() {
+            if (validateCurrentSection()) {
+                // Populate print content
+                populatePrintContent();
+                
+                // Hide form and show success
+                document.querySelector('.form-container').style.display = 'none';
+                document.getElementById('successMessage').classList.add('show');
+                
+                console.log('✅ Registration submitted successfully!');
+            }
+        }
+
+        function populatePrintContent() {
+            // Get form data
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                location: document.getElementById('location').value,
+                serviceNumber: `${document.getElementById('setYear').value}/${document.getElementById('serialNumber').value}`,
+                squadron: document.getElementById('squadron').value,
+                chapter: document.getElementById('chapter').value,
+                rank: document.getElementById('rank').value,
+                emergencyContact: document.getElementById('emergencyContact').value,
+                emergencyPhone: document.getElementById('emergencyPhone').value,
+                emergencyRelationship: document.getElementById('emergencyRelationship').value,
+                preferredContact: document.getElementById('preferredContact').value,
+                photo: document.getElementById('photoData').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            // Populate badge
+            document.getElementById('badgeName').textContent = formData.fullName;
+            document.getElementById('badgeService').textContent = `Service: ${formData.serviceNumber}`;
+            document.getElementById('badgeSquadron').textContent = `Squadron: ${formData.squadron}`;
+            document.getElementById('badgeChapter').textContent = `Chapter: ${formData.chapter}`;
+            document.getElementById('badgeRank').textContent = `Rank: ${formData.rank || 'Not specified'}`;
+            
+            if (formData.photo) {
+                document.getElementById('badgePhoto').innerHTML = `<img src="${formData.photo}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
+            }
+            
+            // Populate welcome message
+            document.getElementById('welcomeName').textContent = formData.fullName;
+            document.getElementById('welcomeService').textContent = formData.serviceNumber;
+            document.getElementById('welcomeSquadron').textContent = formData.squadron;
+            document.getElementById('welcomeChapter').textContent = formData.chapter;
+            document.getElementById('welcomeContact').textContent = `${formData.email} | ${formData.phone}`;
+        }
+
+        // Print functions
+        function printBadge() {
+            const printContent = document.getElementById('printContent');
+            const eventBadge = document.getElementById('eventBadge');
+            
+            printContent.style.display = 'block';
+            eventBadge.style.display = 'block';
+            
+            setTimeout(() => {
+                window.print();
+                printContent.style.display = 'none';
+                eventBadge.style.display = 'none';
+            }, 100);
+        }
+
+        function printWelcome() {
+            const printContent = document.getElementById('printContent');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
+            printContent.style.display = 'block';
+            welcomeMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                window.print();
+                printContent.style.display = 'none';
+                welcomeMessage.style.display = 'none';
+            }, 100);
+        }
+
+        // Test functions
+        function fillTestData() {
+            console.log('=== FILLING TEST DATA ===');
+            
+            // Fill form fields
+            document.getElementById('fullName').value = 'John Doe';
+            document.getElementById('email').value = 'john.doe@example.com';
+            document.getElementById('phone').value = '+234 801 234 5678';
+            document.getElementById('location').value = 'Lagos, Nigeria';
+            document.getElementById('setYear').value = '94';
+            document.getElementById('serialNumber').value = '1849';
+            document.getElementById('squadron').value = 'Alpha';
+            document.getElementById('chapter').value = 'Lagos';
+            document.getElementById('rank').value = 'Captain';
+            document.getElementById('emergencyContact').value = 'Jane Doe';
+            document.getElementById('emergencyPhone').value = '+234 801 234 5679';
+            document.getElementById('emergencyRelationship').value = 'Spouse';
+            document.getElementById('preferredContact').value = 'Email';
+            document.getElementById('notes').value = 'No special requirements.';
+            
+            // Create test photo
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#1e3c72';
+            ctx.fillRect(0, 0, 200, 200);
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Test Photo', 100, 100);
+            ctx.fillText('John Doe', 100, 130);
+            
+            const testPhotoData = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('photoData').value = testPhotoData;
+            photoTaken = true;
+            
+            // Update service number display
+            updateServiceNumberDisplay();
+            
+            console.log('✅ Test data filled successfully');
+        }
+
+        function clearForm() {
+            console.log('=== CLEARING FORM ===');
+            
+            // Reset all form fields
+            const form = document.querySelector('.form-container');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.value = '';
+                input.style.borderColor = '#e1e5e9';
+            });
+            
+            // Reset to first section
+            currentSection = 1;
+            showSection(currentSection);
+            updateProgress();
+            updateNavigation();
+            
+            // Reset photo
+            photoTaken = false;
+            document.getElementById('photoData').value = '';
+            document.getElementById('photoCanvas').style.display = 'none';
+            document.getElementById('startCamera').style.display = 'inline-block';
+            document.getElementById('capturePhoto').style.display = 'none';
+            document.getElementById('retakePhoto').style.display = 'none';
+            
+            // Hide success message
+            document.getElementById('successMessage').classList.remove('show');
+            document.querySelector('.form-container').style.display = 'block';
+            
+            console.log('✅ Form cleared successfully');
+        }
+
+        function resetForm() {
+            clearForm();
+        }
+
+        // QR Code Generation
+        function generateQRCode(data, elementId) {
+            const qrContainer = document.getElementById(elementId);
+            if (!qrContainer) return;
+            
+            // Generate unique registration ID
+            const regId = `AFMS-2025-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            
+            // Create QR code using external service
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(data)}`;
+            
+            qrContainer.innerHTML = `<img src="${qrUrl}" alt="QR Code" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
+            
+            return regId;
+        }
+
+        // Payment Functions
+        function payWithFlutterwave() {
+            console.log('=== FLUTTERWAVE PAYMENT ===');
+            
+            // Generate payment reference
+            const paymentRef = `AFMS-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            
+            // Flutterwave payment configuration
+            const paymentData = {
+                tx_ref: paymentRef,
+                amount: 25000,
+                currency: 'NGN',
+                payment_options: 'card,banktransfer,ussd',
+                redirect_url: window.location.href,
+                customer: {
+                    email: document.getElementById('email').value || 'user@example.com',
+                    phone_number: document.getElementById('phone').value || '+2340000000000',
+                    name: document.getElementById('fullName').value || 'AFMS Alumni'
+                },
+                customizations: {
+                    title: 'AFMS Alumni Homecoming 2025',
+                    description: 'Registration Fee Payment',
+                    logo: 'https://via.placeholder.com/150x50/1e3c72/ffffff?text=AFMS'
+                }
+            };
+            
+            // Show payment instructions
+            showPaymentInstructions('Flutterwave', paymentRef, paymentData);
+            
+            // In production, this would integrate with Flutterwave API
+            console.log('Flutterwave payment data:', paymentData);
+        }
+
+        function showBankDetails() {
+            console.log('=== BANK TRANSFER DETAILS ===');
+            
+            const paymentRef = `AFMS-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            
+            const bankDetails = `
+                <div style="text-align: left;">
+                    <p><strong>Bank Name:</strong> First Bank of Nigeria</p>
+                    <p><strong>Account Name:</strong> AFMS Alumni Association</p>
+                    <p><strong>Account Number:</strong> 1234567890</p>
+                    <p><strong>Amount:</strong> ₦25,000</p>
+                    <p><strong>Reference:</strong> ${paymentRef}</p>
+                    <p><strong>Note:</strong> Please use your full name as payment reference</p>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;">
+                    <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                        <strong>Important:</strong> After payment, please send proof of payment to:<br>
+                        <strong>Email:</strong> payments@afms-alumni.org<br>
+                        <strong>WhatsApp:</strong> +234 801 234 5678
+                    </p>
+                </div>
+            `;
+            
+            showPaymentInstructions('Bank Transfer', paymentRef, bankDetails);
+        }
+
+        function showMobileMoney() {
+            console.log('=== MOBILE MONEY DETAILS ===');
+            
+            const paymentRef = `AFMS-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            
+            const mobileMoneyDetails = `
+                <div style="text-align: left;">
+                    <p><strong>Mobile Money Options:</strong></p>
+                    <div style="margin: 15px 0;">
+                        <p><strong>Paga:</strong> Send ₦25,000 to 08012345678</p>
+                        <p><strong>OPay:</strong> Send ₦25,000 to 08012345678</p>
+                        <p><strong>Kuda:</strong> Send ₦25,000 to 08012345678</p>
+                    </div>
+                    <p><strong>Reference:</strong> ${paymentRef}</p>
+                    <p><strong>Note:</strong> Please include your full name in the message</p>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;">
+                    <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                        <strong>Important:</strong> After payment, please send proof of payment to:<br>
+                        <strong>Email:</strong> payments@afms-alumni.org<br>
+                        <strong>WhatsApp:</strong> +234 801 234 5678
+                    </p>
+                </div>
+            `;
+            
+            showPaymentInstructions('Mobile Money', paymentRef, mobileMoneyDetails);
+        }
+
+        function showPaymentInstructions(paymentMethod, reference, details) {
+            const paymentDetails = document.getElementById('paymentDetails');
+            const paymentInstructions = document.getElementById('paymentInstructions');
+            
+            if (typeof details === 'string') {
+                paymentInstructions.innerHTML = details;
+            } else {
+                paymentInstructions.innerHTML = `
+                    <div style="text-align: left;">
+                        <p><strong>Payment Method:</strong> ${paymentMethod}</p>
+                        <p><strong>Reference:</strong> ${reference}</p>
+                        <p><strong>Amount:</strong> ₦25,000</p>
+                        <p><strong>Status:</strong> <span style="color: #28a745;">Ready for Payment</span></p>
+                    </div>
+                `;
+            }
+            
+            paymentDetails.style.display = 'block';
+            
+            // Scroll to payment details
+            paymentDetails.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Event Sharing Function
+        function shareEvent() {
+            console.log('=== SHARING EVENT DETAILS ===');
+            
+            const eventData = {
+                title: 'AFMS Alumni Homecoming 2025',
+                text: 'Join us for the historic AFMS Alumni Homecoming Event! Theme: "Strive to Excel"',
+                url: window.location.href
+            };
+            
+            // Try native sharing first
+            if (navigator.share) {
+                navigator.share(eventData)
+                    .then(() => console.log('Event shared successfully'))
+                    .catch((error) => console.log('Error sharing:', error));
+            } else {
+                // Fallback: copy to clipboard and show message
+                const shareText = `${eventData.title}\n\n${eventData.text}\n\nRegister at: ${eventData.url}`;
+                
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(shareText).then(() => {
+                        alert('Event details copied to clipboard! You can now share them.');
+                    });
+                } else {
+                    // Final fallback: show text in alert
+                    alert(`Share this event:\n\n${shareText}`);
+                }
+            }
+        }
+
+        // Enhanced populatePrintContent function
+        function populatePrintContent() {
+            // Get form data
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                location: document.getElementById('location').value,
+                serviceNumber: `${document.getElementById('setYear').value}/${document.getElementById('serialNumber').value}`,
+                squadron: document.getElementById('squadron').value,
+                chapter: document.getElementById('chapter').value,
+                rank: document.getElementById('rank').value,
+                emergencyContact: document.getElementById('emergencyContact').value,
+                emergencyPhone: document.getElementById('emergencyPhone').value,
+                emergencyRelationship: document.getElementById('emergencyRelationship').value,
+                preferredContact: document.getElementById('preferredContact').value,
+                photo: document.getElementById('photoData').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            // Generate QR code data
+            const qrData = JSON.stringify({
+                name: formData.fullName,
+                serviceNumber: formData.serviceNumber,
+                squadron: formData.squadron,
+                chapter: formData.chapter,
+                event: 'AFMS Alumni Homecoming 2025',
+                date: 'November 28-30, 2025',
+                location: 'AFMS Campus, Nigeria'
+            });
+            
+            // Generate QR code and registration ID
+            const regId = generateQRCode(qrData, 'badgeQRCode');
+            
+            // Populate badge
+            document.getElementById('badgeName').textContent = formData.fullName;
+            document.getElementById('badgeService').textContent = `Service: ${formData.serviceNumber}`;
+            document.getElementById('badgeSquadron').textContent = `Squadron: ${formData.squadron}`;
+            document.getElementById('badgeChapter').textContent = `Chapter: ${formData.chapter}`;
+            document.getElementById('badgeRank').textContent = `Rank: ${formData.rank || 'Not specified'}`;
+            document.getElementById('badgeRegId').textContent = regId;
+            
+            if (formData.photo) {
+                document.getElementById('badgePhoto').innerHTML = `<img src="${formData.photo}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
+            }
+            
+            // Populate welcome message
+            document.getElementById('welcomeName').textContent = formData.fullName;
+            document.getElementById('welcomeService').textContent = formData.serviceNumber;
+            document.getElementById('welcomeSquadron').textContent = formData.squadron;
+            document.getElementById('welcomeChapter').textContent = formData.chapter;
+            document.getElementById('welcomeContact').textContent = `${formData.email} | ${formData.phone}`;
+            
+            console.log('✅ Print content populated with QR code and registration ID');
+        }
+    </script>
+</body>
+</html>

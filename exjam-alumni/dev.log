@@ -1,0 +1,271 @@
+
+> exjam-alumni@0.1.0 dev
+> node scripts/validate-env.js && next dev
+
+[36m🔍 Validating Environment Variables...[0m
+
+[34mRequired Variables:[0m
+  [32m✓[0m DATABASE_URL: [32mSet[0m
+  [32m✓[0m JWT_SECRET: [32mSet[0m
+  [32m✓[0m RESEND_API_KEY: [32mSet[0m
+  [32m✓[0m PAYSTACK_SECRET_KEY: [32mSet[0m
+  [32m✓[0m PAYSTACK_PUBLIC_KEY: [32mSet[0m
+  [32m✓[0m NEXT_PUBLIC_APP_URL: [32mSet[0m
+
+[34mOptional Variables:[0m
+  [32m✓[0m DIRECT_URL: [32mSet[0m
+  [33m⚠[0m NEXT_PUBLIC_URL: [33mNot set[0m
+    [36m→ Alternative public URL configuration[0m
+  [32m✓[0m NEXT_PUBLIC_SUPABASE_URL: [32mSet[0m
+  [32m✓[0m NEXT_PUBLIC_SUPABASE_ANON_KEY: [32mSet[0m
+  [32m✓[0m SUPABASE_SERVICE_ROLE_KEY: [32mSet[0m
+  [33m⚠[0m NODE_ENV: [33mNot set[0m
+    [36m→ Node environment (development/production/test)[0m
+  [33m⚠[0m SKIP_ENV_VALIDATION: [33mNot set[0m
+    [36m→ Skip environment validation (true/false)[0m
+
+[34mEnvironment Files:[0m
+  [32m✓[0m .env: Found
+  [32m✓[0m .env.local: Found
+  [32m✓[0m .env.production: Found
+
+[36m==================================================[0m
+
+[33m⚠️  Environment Validation Passed with Warnings[0m
+
+[33mWarnings:[0m
+  [33m⚠[0m NEXT_PUBLIC_URL: Not set
+  [33m⚠[0m NODE_ENV: Not set
+  [33m⚠[0m SKIP_ENV_VALIDATION: Not set
+
+[32m✅ All required variables are set[0m
+
+   ▲ Next.js 15.5.0
+   - Local:        http://localhost:3000
+   - Network:      http://10.0.0.219:3000
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 1395ms
+ ✓ Compiled /middleware in 152ms (183 modules)
+ ○ Compiling /alumni ...
+ ✓ Compiled /alumni in 2.7s (859 modules)
+ GET /alumni 200 in 3070ms
+ ✓ Compiled in 527ms (360 modules)
+ ○ Compiling /api/alumni ...
+ ✓ Compiled /api/alumni in 602ms (932 modules)
+Error fetching alumni: {
+  code: 'PGRST205',
+  details: null,
+  hint: "Perhaps you meant the table 'public.alumni_connections'",
+  message: "Could not find the table 'public.alumni_directory' in the schema cache"
+}
+ GET /api/alumni 500 in 1255ms
+ ✓ Compiled in 326ms (946 modules)
+ ✓ Compiled in 267ms (946 modules)
+Error fetching alumni: {
+  code: '42501',
+  details: null,
+  hint: null,
+  message: 'permission denied for table alumni_profiles'
+}
+ GET /api/alumni 500 in 468ms
+ ○ Compiling /register ...
+ ✓ Compiled /register in 1085ms (1283 modules)
+ GET /register 200 in 1420ms
+ ✓ Compiled in 867ms (1283 modules)
+ GET /register 200 in 99ms
+ GET /register 200 in 205ms
+ GET /register 200 in 71ms
+ ✓ Compiled in 214ms (535 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /register 200 in 54ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 638ms (1192 modules)
+ ⨯ ReferenceError: SimpleHeader is not defined
+    at RootLayout (app/layout.tsx:23:12)
+  21 |       <body className={inter.className}>
+  22 |         <div className="min-h-screen flex flex-col">
+> 23 |           <SimpleHeader />
+     |            ^
+  24 |           <main className="flex-1">
+  25 |             {children}
+  26 |           </main> {
+  digest: '2241545886'
+}
+ GET /register 500 in 523ms
+ ✓ Compiled in 317ms (1193 modules)
+ GET /register 200 in 223ms
+ ✓ Compiled /events in 353ms (1198 modules)
+ GET /events 200 in 431ms
+ ✓ Compiled /api/events in 333ms (1351 modules)
+Error: Route "/api/events" used `headers().get('authorization')`. `headers()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createHeadersAccessError (../../../src/server/request/headers.ts:484:10)
+    at syncIODev (../../../src/server/request/headers.ts:472:3)
+    at Promise.get (../../../src/server/request/headers.ts:314:9)
+    at createClient (lib/supabase/server.ts:13:32)
+    at GET (app/api/events/route.ts:21:40)
+  482 | ) {
+  483 |   const prefix = route ? `Route "${route}" ` : 'This route '
+> 484 |   return new Error(
+      |          ^
+  485 |     `${prefix}used ${expression}. ` +
+  486 |       `\`headers()\` should be awaited before using its value. ` +
+  487 |       `Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis`
+ GET /api/events 200 in 1725ms
+Error: Route "/api/events" used `headers().get('authorization')`. `headers()` should be awaited before using its value. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at createHeadersAccessError (../../../src/server/request/headers.ts:484:10)
+    at syncIODev (../../../src/server/request/headers.ts:472:3)
+    at Promise.get (../../../src/server/request/headers.ts:314:9)
+    at createClient (lib/supabase/server.ts:13:32)
+    at GET (app/api/events/route.ts:21:40)
+  482 | ) {
+  483 |   const prefix = route ? `Route "${route}" ` : 'This route '
+> 484 |   return new Error(
+      |          ^
+  485 |     `${prefix}used ${expression}. ` +
+  486 |       `\`headers()\` should be awaited before using its value. ` +
+  487 |       `Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis`
+ GET /api/events 200 in 571ms
+ ✓ Compiled /contact in 186ms (1362 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json',
+  page: '/contact'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1070ms (1702 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json',
+  page: '/contact'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+ GET /contact 500 in 3475ms
+ GET /contact 500 in 280ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json',
+  page: '/contact'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json',
+  page: '/contact'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+ GET /contact 500 in 810ms
+ GET /contact 500 in 243ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json',
+  page: '/contact'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json',
+  page: '/contact'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+ GET /contact 500 in 735ms
+ GET /contact 500 in 242ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json',
+  page: '/contact'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json',
+  page: '/contact'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/goldmay/exjam-alumni-research/exjam-alumni/.next/routes-manifest.json'
+}
+ GET /contact 500 in 779ms
+ GET /contact 500 in 264ms

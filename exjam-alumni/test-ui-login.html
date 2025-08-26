@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Login UI</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .status {
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      button:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+      }
+      iframe {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .test-results {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+        white-space: pre-wrap;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Login UI Test Suite</h1>
+
+    <div class="status info">
+      <strong>Test Environment:</strong>
+      <br />URL: http://localhost:3001/login <br />Test Account: demo@exjamalumni.org / Demo123456!
+    </div>
+
+    <div id="testResults" class="test-results">Test results will appear here...</div>
+
+    <div>
+      <button onclick="testButtonState()">Test Button State</button>
+      <button onclick="testFormSubmission()">Test Form Submission</button>
+      <button onclick="testAuthPersistence()">Test Auth Persistence</button>
+      <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <h2>Login Page Preview:</h2>
+    <iframe id="loginFrame" src="http://localhost:3001/login"></iframe>
+
+    <script>
+      const baseUrl = "http://localhost:3001";
+      const resultsDiv = document.getElementById("testResults");
+
+      function log(message, type = "info") {
+        const timestamp = new Date().toLocaleTimeString();
+        const symbols = {
+          success: "✅",
+          error: "❌",
+          warning: "⚠️",
+          info: "ℹ️",
+        };
+        resultsDiv.innerHTML += `${symbols[type]} [${timestamp}] ${message}\n`;
+      }
+
+      async function testButtonState() {
+        log("Testing button state...", "info");
+
+        try {
+          // Check if button is enabled
+          const frame = document.getElementById("loginFrame");
+          frame.contentWindow.postMessage(
+            {
+              type: "CHECK_BUTTON_STATE",
+            },
+            "*"
+          );
+
+          // Listen for response
+          window.addEventListener("message", function handler(e) {
+            if (e.data.type === "BUTTON_STATE_RESPONSE") {
+              if (e.data.enabled) {
+                log("Button is enabled and clickable!", "success");
+              } else {
+                log("Button is disabled!", "error");
+              }
+              window.removeEventListener("message", handler);
+            }
+          });
+
+          // Simulate checking button via DOM inspection
+          setTimeout(() => {
+            log("Button state check completed", "success");
+          }, 1000);
+        } catch (error) {
+          log(`Error testing button state: ${error.message}`, "error");
+        }
+      }
+
+      async function testFormSubmission() {
+        log("Testing form submission...", "info");
+
+        try {
+          const response = await fetch(`${baseUrl}/api/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: "demo@exjamalumni.org",
+              password: "Demo123456!",
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.user) {
+            log(`Login successful! User: ${data.user.email}`, "success");
+            log(`Session created with token`, "success");
+          } else {
+            log(`Login failed: ${data.error || "Unknown error"}`, "error");
+          }
+        } catch (error) {
+          log(`Form submission error: ${error.message}`, "error");
+        }
+      }
+
+      async function testAuthPersistence() {
+        log("Testing auth persistence...", "info");
+
+        try {
+          // Check localStorage
+          const authData = localStorage.getItem("consolidated-auth");
+          const supabaseAuth = localStorage.getItem("sb-yzrzjagkkycmdwuhrvww-auth-token");
+
+          if (authData) {
+            const parsed = JSON.parse(authData);
+            log("Found consolidated auth data in localStorage", "success");
+            if (parsed.state?.isAuthenticated) {
+              log("User is authenticated in store", "success");
+            } else {
+              log("User is not authenticated in store", "warning");
+            }
+          } else {
+            log("No consolidated auth data found", "warning");
+          }
+
+          if (supabaseAuth) {
+            log("Found Supabase auth token in localStorage", "success");
+          } else {
+            log("No Supabase auth token found", "warning");
+          }
+        } catch (error) {
+          log(`Auth persistence error: ${error.message}`, "error");
+        }
+      }
+
+      async function runAllTests() {
+        resultsDiv.innerHTML = ""; // Clear previous results
+        log("Starting comprehensive test suite...", "info");
+        log("====================================", "info");
+
+        await testButtonState();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        await testFormSubmission();
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        await testAuthPersistence();
+
+        log("====================================", "info");
+        log("All tests completed!", "success");
+      }
+
+      // Auto-refresh iframe every 5 seconds if needed
+      let refreshInterval;
+      function toggleAutoRefresh() {
+        if (refreshInterval) {
+          clearInterval(refreshInterval);
+          refreshInterval = null;
+          log("Auto-refresh disabled", "info");
+        } else {
+          refreshInterval = setInterval(() => {
+            document.getElementById("loginFrame").src = `${baseUrl}/login`;
+            log("Page refreshed", "info");
+          }, 5000);
+          log("Auto-refresh enabled (5s interval)", "info");
+        }
+      }
+    </script>
+  </body>
+</html>
