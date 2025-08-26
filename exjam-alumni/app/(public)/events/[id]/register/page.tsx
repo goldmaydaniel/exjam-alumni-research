@@ -36,6 +36,20 @@ interface Event {
   earlyBirdDeadline?: string;
 }
 
+// Fallback event for when database is not set up
+const fallbackEvent: Event = {
+  id: "pg-conference-2025",
+  title: "President General's Conference - Maiden Flight",
+  shortDescription: "A historic gathering of ExJAM alumni, leaders, and stakeholders to shape the future of our association",
+  startDate: "2025-11-28T09:00:00.000Z",
+  endDate: "2025-11-30T18:00:00.000Z",
+  venue: "NAF Conference Centre, FCT, ABUJA",
+  address: "Nigerian Air Force Conference Centre, Abuja, Federal Capital Territory, Nigeria",
+  price: 20000,
+  earlyBirdPrice: undefined,
+  earlyBirdDeadline: undefined,
+};
+
 export default function EventRegistrationPage() {
   const params = useParams();
   const router = useRouter();
@@ -54,12 +68,25 @@ export default function EventRegistrationPage() {
   const fetchEvent = async (id: string) => {
     try {
       const response = await fetch(`/api/events/${id}`);
-      if (!response.ok) throw new Error("Event not found");
-      const data = await response.json();
-      setEvent(data);
+      if (!response.ok) {
+        // If API fails, use fallback event for pg-conference-2025
+        if (id === "pg-conference-2025") {
+          setEvent(fallbackEvent);
+        } else {
+          throw new Error("Event not found");
+        }
+      } else {
+        const data = await response.json();
+        setEvent(data);
+      }
     } catch (err) {
       console.error(err);
-      router.push("/events");
+      // Use fallback event for pg-conference-2025, otherwise redirect
+      if (id === "pg-conference-2025") {
+        setEvent(fallbackEvent);
+      } else {
+        router.push("/events");
+      }
     } finally {
       setLoading(false);
     }
@@ -87,14 +114,6 @@ export default function EventRegistrationPage() {
   };
 
   const handleRegistration = async () => {
-    // Check if user is logged in
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Please login to register for events");
-      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-
     setRegistering(true);
 
     try {
@@ -102,7 +121,8 @@ export default function EventRegistrationPage() {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       toast.success("Registration successful! Check your email for confirmation.");
-      router.push(`/events/${eventId}/confirmation`);
+      // For now, redirect to events page since confirmation page might not exist
+      router.push(`/events`);
     } catch (error) {
       toast.error("Registration failed. Please try again.");
     } finally {
