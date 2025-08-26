@@ -13,9 +13,6 @@ import {
   Database,
   Calendar,
   Users,
-  Home,
-  Info,
-  Mail,
   ChevronDown,
   Settings,
   BarChart3,
@@ -40,27 +37,22 @@ const navigation = [
   {
     name: "Home",
     href: "/",
-    icon: Home,
   },
   {
     name: "About",
     href: "/about",
-    icon: Info,
   },
   {
     name: "Alumni",
     href: "/alumni",
-    icon: Users,
   },
   {
     name: "Events",
     href: "/events",
-    icon: Calendar,
   },
   {
     name: "Contact",
     href: "/contact",
-    icon: Mail,
   },
 ];
 
@@ -114,10 +106,9 @@ export function EnhancedHeader() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-1">
+          {/* Desktop Navigation - Clean typography approach */}
+          <div className="hidden md:flex md:items-center md:space-x-6">
             {navigation.map((item) => {
-              const Icon = item.icon;
               const isActive =
                 pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
 
@@ -126,14 +117,16 @@ export function EnhancedHeader() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                    "relative px-1 py-2 text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                      ? "text-blue-700"
+                      : "text-gray-700 hover:text-gray-900"
                   )}
                 >
-                  <Icon className="h-4 w-4" />
                   {item.name}
+                  {isActive && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
+                  )}
                 </Link>
               );
             })}
@@ -272,12 +265,11 @@ export function EnhancedHeader() {
           </button>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu - Clean approach */}
         {mobileMenuOpen && (
           <div className="md:hidden">
             <div className="space-y-1 pb-3 pt-2">
               {navigation.map((item) => {
-                const Icon = item.icon;
                 const isActive =
                   pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
 
@@ -286,14 +278,13 @@ export function EnhancedHeader() {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-base font-medium",
+                      "block px-3 py-3 text-base font-medium rounded-lg",
                       isActive
-                        ? "bg-blue-50 text-blue-700"
+                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-600"
                         : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Icon className="h-5 w-5" />
                     {item.name}
                   </Link>
                 );

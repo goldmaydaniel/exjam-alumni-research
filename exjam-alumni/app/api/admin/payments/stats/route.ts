@@ -1,47 +1,64 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { verifyToken } from "@/lib/auth";
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth/auth-complete'
+import { withErrorHandling } from '@/lib/middleware/error-middleware'
+import { db } from '@/lib/db/prisma'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/payments/stats
+ * Get payment statistics for admin dashboard
+ */
+export const GET = withErrorHandling(async (req: NextRequest) => {
+  const session = await requireAuth(['ADMIN', 'ORGANIZER'])
+
   try {
-    const token = request.headers.get("Authorization")?.replace("Bearer ", "");
-    const user = await verifyToken(token);
-
-    if (!user || !["ADMIN", "ORGANIZER"].includes(user.role)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get payment statistics
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    
     const [
-      totalPayments,
-      completedPayments,
+      totalRevenue,
+      monthlyRevenue,
       pendingPayments,
-      bankTransferPendingPayments,
-      revenueData,
+      successfulPayments
     ] = await Promise.all([
-      prisma.payment.count(),
-      prisma.payment.count({ where: { status: "COMPLETED" } }),
-      prisma.payment.count({ where: { status: "PENDING" } }),
-      prisma.payment.count({ where: { status: "BANK_TRANSFER_PENDING" } }),
-      prisma.payment.aggregate({
-        where: { status: "COMPLETED" },
-        _sum: { amount: true },
+      // Total revenue from successful payments
+      db.payment.aggregate({
+        where: { status: 'SUCCESS' },
+        _sum: { amount: true }
       }),
-    ]);
+      
+      // Revenue this month
+      db.payment.aggregate({
+        where: {
+          status: 'SUCCESS',
+          createdAt: { gte: startOfMonth }
+        },
+        _sum: { amount: true }
+      }),
+      
+      // Pending payments count
+      db.payment.count({
+        where: { status: 'PENDING' }
+      }),
+      
+      // Successful payments count
+      db.payment.count({
+        where: { status: 'SUCCESS' }
+      })
+    ])
 
-    const stats = {
-      total: totalPayments,
-      completed: completedPayments,
+    return NextResponse.json({
+      totalRevenue: Number(totalRevenue._sum.amount || 0),
+      thisMonth: Number(monthlyRevenue._sum.amount || 0),
       pending: pendingPayments,
-      bankTransferPending: bankTransferPendingPayments,
-      totalRevenue: revenueData._sum.amount || 0,
-    };
-
-    return NextResponse.json(stats);
+      successful: successfulPayments
+    })
   } catch (error) {
-    console.error("Payment stats error:", error);
-    return NextResponse.json({ error: "Failed to fetch payment statistics" }, { status: 500 });
+    console.error('Failed to fetch payment stats:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch payment statistics' },
+      { status: 500 }
+    )
   }
-}
+})

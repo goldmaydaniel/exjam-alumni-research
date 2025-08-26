@@ -23,7 +23,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/lib/store/consolidated-auth";
 import SocialAuthButtons from "@/components/auth/social-auth-buttons";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Users, ArrowRight, Mail, Lock, Sparkles, CheckCircle, Star } from "lucide-react";
+import { Shield, Users, ArrowRight, Mail, Lock } from "lucide-react";
 
 // Lazy load icon to reduce bundle size
 const Loader2 = lazy(() => import("lucide-react").then((mod) => ({ default: mod.Loader2 })));

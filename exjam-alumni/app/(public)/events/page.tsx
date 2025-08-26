@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { SwipeCarousel, useResponsiveItemsPerView } from "@/components/ui/swipe-carousel";
 import { EventCard } from "@/components/ui/event-card";
 import Link from "next/link";
+import { eventsAPI, cacheManager } from "@/lib/api-client-enhanced";
+import ErrorBoundary, { APIErrorFallback } from "@/components/error-boundary-enhanced";
+import { NoSSR } from "@/components/no-ssr";
 import {
   Calendar,
   MapPin,
@@ -37,12 +40,14 @@ interface Event {
   tags: string[];
 }
 
-export default function EventsPage() {
+function EventsPageContent() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [pastEvents, setPastEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"upcoming" | "all" | "past">("upcoming");
   const [searchQuery, setSearchQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
   const itemsPerView = useResponsiveItemsPerView();
 
   // Optimized fallback event with better imagery
@@ -60,69 +65,119 @@ export default function EventsPage() {
   };
 
   useEffect(() => {
+    setMounted(true);
     fetchEvents();
   }, []);
 
   const fetchEvents = async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      const response = await fetch("/api/events?showPast=true&status=ALL");
+      // Try to get cached data first for better UX
+      const cacheKey = 'events_all';
+      const cachedData = cacheManager.get(cacheKey);
       
-      if (response.ok) {
-        const data = await response.json();
-        const allEvents = data.events || [];
+      if (cachedData) {
+        processEventsData(cachedData.events);
+        setLoading(false);
+        
+        // Still fetch fresh data in background
+        fetchFreshEvents(cacheKey);
+        return;
+      }
 
-        // Remove duplicates by ID and also by title to prevent fallback duplicates
-        const uniqueEvents = allEvents.filter(
-          (event: Event, index: number, self: Event[]) =>
-            index === self.findIndex((e) => 
-              e.id === event.id || 
-              (e.title === event.title && e.startDate === event.startDate)
-            )
-        );
+      // No cache, fetch fresh data
+      await fetchFreshEvents(cacheKey);
+    } catch (error) {
+      handleFetchError(error);
+    }
+  };
 
-        // Also filter out any events that match our fallback event
-        const filteredEvents = uniqueEvents.filter(event => 
-          !(event.title === fallbackEvent.title && 
-            event.startDate === fallbackEvent.startDate)
-        );
-
-        const now = new Date();
-
-        // Split and sort events
-        const upcoming = filteredEvents
-          .filter((event: Event) => new Date(event.endDate) >= now && event.status !== "COMPLETED")
-          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
-        const past = filteredEvents
-          .filter((event: Event) => new Date(event.endDate) < now || event.status === "COMPLETED")
-          .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-
-        // Only use fallback if no upcoming events found
-        setUpcomingEvents(upcoming.length === 0 ? [fallbackEvent] : upcoming);
-        setPastEvents(past);
+  const fetchFreshEvents = async (cacheKey: string) => {
+    try {
+      const response = await eventsAPI.getAll();
+      
+      if (response.success && response.data) {
+        const allEvents = response.data.events || [];
+        processEventsData(allEvents);
+        
+        // Cache the successful response
+        cacheManager.set(cacheKey, response.data, 2 * 60 * 1000); // 2 minutes cache
+        
+        setError(null);
       } else {
-        setUpcomingEvents([fallbackEvent]);
-        setPastEvents([]);
+        throw new Error(response.error || 'Failed to fetch events');
       }
     } catch (error) {
-      setUpcomingEvents([fallbackEvent]);
-      setPastEvents([]);
+      handleFetchError(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredEvents = (() => {
-    // Ensure we don't have duplicates between upcoming and fallback
-    const eventsWithFallback = upcomingEvents.length === 0 ? [fallbackEvent] : upcomingEvents;
+  const processEventsData = (allEvents: Event[]) => {
+    // Aggressively filter out any test events that might exist in the database
+    const filteredEvents = allEvents.filter(event => {
+      const title = event.title?.toLowerCase() || '';
+      const description = event.description?.toLowerCase() || '';
+      const venue = event.venue?.toLowerCase() || '';
+      
+      return !title.includes('test') && 
+             !description.includes('test') && 
+             !venue.includes('test') &&
+             event.id !== 'test-event' &&
+             !event.id.includes('test') &&
+             !title.includes('demo') &&
+             !description.includes('demo');
+    });
+
+    // Remove duplicates by ID and also by title to prevent fallback duplicates
+    const uniqueEvents = filteredEvents.filter(
+      (event: Event, index: number, self: Event[]) =>
+        index === self.findIndex((e) => 
+          e.id === event.id || 
+          (e.title === event.title && e.startDate === event.startDate)
+        )
+    );
+
+    const now = new Date();
+
+    // Split and sort events
+    const upcoming = uniqueEvents
+      .filter((event: Event) => new Date(event.endDate) >= now && event.status !== "COMPLETED")
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+    const past = uniqueEvents
+      .filter((event: Event) => new Date(event.endDate) < now || event.status === "COMPLETED")
+      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+
+    // Always use fallback event for upcoming if no legitimate events exist
+    setUpcomingEvents(upcoming.length === 0 ? [fallbackEvent] : [fallbackEvent, ...upcoming]);
+    setPastEvents(past);
+  };
+
+  const handleFetchError = (error: any) => {
+    console.error('Events fetch error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to load events';
+    setError(errorMessage);
     
+    // Use fallback data on error
+    setUpcomingEvents([fallbackEvent]);
+    setPastEvents([]);
+    
+    // Clear any stale cache
+    cacheManager.clear('events');
+  };
+
+  const filteredEvents = (() => {
     let events = filter === "upcoming" 
-      ? eventsWithFallback 
+      ? upcomingEvents 
       : filter === "past" 
         ? pastEvents 
-        : [...eventsWithFallback, ...pastEvents];
+        : [...upcomingEvents, ...pastEvents];
 
-    // Remove any duplicates that might still exist
+    // Remove any duplicates that might exist
     const uniqueEvents = events.filter(
       (event, index, self) =>
         index === self.findIndex((e) => 
@@ -131,9 +186,26 @@ export default function EventsPage() {
         )
     );
 
+    // Filter out test events again just in case - more aggressive filtering
+    const cleanEvents = uniqueEvents.filter(event => {
+      if (event.id === fallbackEvent.id) return true; // Always allow our proper fallback event
+      
+      const title = event.title?.toLowerCase() || '';
+      const description = event.description?.toLowerCase() || '';
+      const venue = event.venue?.toLowerCase() || '';
+      
+      return !title.includes('test') && 
+             !description.includes('test') && 
+             !venue.includes('test') &&
+             event.id !== 'test-event' &&
+             !event.id.includes('test') &&
+             !title.includes('demo') &&
+             !description.includes('demo');
+    });
+
     // Apply search filter
     if (searchQuery.trim()) {
-      return uniqueEvents.filter(event =>
+      return cleanEvents.filter(event =>
         event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.shortDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
         event.venue.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -141,16 +213,43 @@ export default function EventsPage() {
       );
     }
 
-    return uniqueEvents;
+    return cleanEvents;
   })();
 
-  if (loading) {
+  // Prevent hydration mismatch during initial mount
+  if (!mounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="container mx-auto py-20">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="h-96 loading-shimmer rounded-2xl bg-white/60 shadow-lg event-card-hover" />
+              <div key={i} className="h-96 animate-pulse rounded-2xl bg-white/60 shadow-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show API error with retry option
+  if (error && !loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <APIErrorFallback 
+          error={new Error(error)} 
+          retry={fetchEvents}
+        />
+      </div>
+    );
+  }
+
+  if (loading && upcomingEvents.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="container mx-auto py-20">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="h-96 animate-pulse rounded-2xl bg-white/60 shadow-lg" />
             ))}
           </div>
         </div>
@@ -163,12 +262,14 @@ export default function EventsPage() {
       {/* Hero Section - Optimized Color Psychology */}
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-blue-800 to-purple-900 py-20">
         {/* Enhanced animated background elements with color psychology */}
-        <div className="absolute inset-0">
-          <div className="absolute right-0 top-0 h-96 w-96 translate-x-32 -translate-y-32 transform rounded-full bg-gradient-to-br from-amber-400 to-orange-500 opacity-20 blur-3xl floating-element" />
-          <div className="absolute bottom-0 left-0 h-96 w-96 -translate-x-32 translate-y-32 transform rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 opacity-20 blur-3xl floating-element" style={{ animationDelay: '2s' }} />
-          <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-gradient-to-br from-pink-400 to-rose-500 opacity-10 blur-2xl floating-element" style={{ animationDelay: '4s' }} />
-          <div className="absolute right-1/4 bottom-1/4 h-48 w-48 translate-x-16 translate-y-16 transform rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 opacity-15 blur-2xl floating-element" style={{ animationDelay: '1s' }} />
-        </div>
+        <NoSSR>
+          <div className="absolute inset-0">
+            <div className="absolute right-0 top-0 h-96 w-96 translate-x-32 -translate-y-32 transform rounded-full bg-gradient-to-br from-amber-400 to-orange-500 opacity-20 blur-3xl floating-element" />
+            <div className="absolute bottom-0 left-0 h-96 w-96 -translate-x-32 translate-y-32 transform rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 opacity-20 blur-3xl floating-element" style={{ animationDelay: '2s' }} />
+            <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-gradient-to-br from-pink-400 to-rose-500 opacity-10 blur-2xl floating-element" style={{ animationDelay: '4s' }} />
+            <div className="absolute right-1/4 bottom-1/4 h-48 w-48 translate-x-16 translate-y-16 transform rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 opacity-15 blur-2xl floating-element" style={{ animationDelay: '1s' }} />
+          </div>
+        </NoSSR>
 
         <div className="container relative z-10 mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
@@ -265,25 +366,42 @@ export default function EventsPage() {
                   <p className="text-gray-600">Discover our most anticipated upcoming gatherings</p>
                 </div>
                 
-                <SwipeCarousel
-                  itemsPerView={itemsPerView}
-                  autoPlay={true}
-                  autoPlayInterval={5000}
-                  showArrows={true}
-                  showDots={true}
-                  className="mb-8"
+                <NoSSR 
+                  fallback={
+                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8">
+                      {upcomingEvents.slice(0, 6).map((event) => (
+                        <EventCard
+                          key={event.id}
+                          event={event}
+                          variant="featured"
+                          showImage={true}
+                          showPrice={true}
+                          showDescription={true}
+                        />
+                      ))}
+                    </div>
+                  }
                 >
-                  {upcomingEvents.slice(0, 6).map((event) => (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      variant="featured"
-                      showImage={true}
-                      showPrice={true}
-                      showDescription={true}
-                    />
-                  ))}
-                </SwipeCarousel>
+                  <SwipeCarousel
+                    itemsPerView={itemsPerView}
+                    autoPlay={true}
+                    autoPlayInterval={5000}
+                    showArrows={true}
+                    showDots={true}
+                    className="mb-8"
+                  >
+                    {upcomingEvents.slice(0, 6).map((event) => (
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        variant="featured"
+                        showImage={true}
+                        showPrice={true}
+                        showDescription={true}
+                      />
+                    ))}
+                  </SwipeCarousel>
+                </NoSSR>
               </div>
             )}
 
@@ -353,5 +471,14 @@ export default function EventsPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+// Main export with error boundary
+export default function EventsPage() {
+  return (
+    <ErrorBoundary>
+      <EventsPageContent />
+    </ErrorBoundary>
   );
 }

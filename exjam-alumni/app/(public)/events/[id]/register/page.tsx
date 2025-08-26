@@ -36,17 +36,14 @@ const registrationSchema = z.object({
   phone: z.string().min(10, "Phone number is required"),
   
   // Alumni Info
-  graduationYear: z.string().min(4, "Graduation year is required"),
+  scvNo: z.string().min(2, "SCV No is required"),
   squadron: z.string().min(2, "Squadron is required"),
   currentLocation: z.string().min(2, "Current location is required"),
   
   // Optional
   emergencyContact: z.string().optional(),
-  dietaryRequirements: z.string().optional(),
-  accommodation: z.boolean().default(false),
   
   // Terms
-  termsAccepted: z.boolean().refine(val => val === true, "You must accept terms"),
   emailUpdates: z.boolean().default(true),
 });
 
@@ -62,12 +59,7 @@ const event = {
   address: "Nigerian Air Force Conference Centre, Abuja, FCT, Nigeria",
   price: 20000,
   features: [
-    "Full event access & materials",
-    "All meals & refreshments included", 
-    "Networking sessions & reunions",
-    "Digital certificates & souvenirs",
-    "Professional photography",
-    "Squadron meetups"
+    "Full event access & materials"
   ]
 };
 
@@ -82,9 +74,7 @@ export default function StreamlinedRegistrationPage() {
   const form = useForm<RegistrationForm>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
-      accommodation: false,
       emailUpdates: true,
-      termsAccepted: false,
     }
   });
 
@@ -341,26 +331,32 @@ export default function StreamlinedRegistrationPage() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Alumni Information</h3>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="graduationYear">Graduation Year *</Label>
+                        <Label htmlFor="scvNo">SCV No *</Label>
                         <Input
-                          id="graduationYear"
-                          {...form.register("graduationYear")}
+                          id="scvNo"
+                          {...form.register("scvNo")}
                           className="mt-1"
-                          placeholder="e.g. 1995"
+                          placeholder="e.g. SCV123456"
                         />
-                        {form.formState.errors.graduationYear && (
-                          <p className="text-red-600 text-sm mt-1">{form.formState.errors.graduationYear.message}</p>
+                        {form.formState.errors.scvNo && (
+                          <p className="text-red-600 text-sm mt-1">{form.formState.errors.scvNo.message}</p>
                         )}
                       </div>
                       
                       <div>
                         <Label htmlFor="squadron">Squadron *</Label>
-                        <Input
-                          id="squadron"
-                          {...form.register("squadron")}
-                          className="mt-1"
-                          placeholder="e.g. Eagle, Falcon, Phoenix"
-                        />
+                        <Select onValueChange={(value) => form.setValue("squadron", value)}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select your squadron" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Blue">Blue</SelectItem>
+                            <SelectItem value="Green">Green</SelectItem>
+                            <SelectItem value="Purple">Purple</SelectItem>
+                            <SelectItem value="Yellow">Yellow</SelectItem>
+                            <SelectItem value="Red">Red</SelectItem>
+                          </SelectContent>
+                        </Select>
                         {form.formState.errors.squadron && (
                           <p className="text-red-600 text-sm mt-1">{form.formState.errors.squadron.message}</p>
                         )}
@@ -396,41 +392,12 @@ export default function StreamlinedRegistrationPage() {
                         />
                       </div>
                       
-                      <div>
-                        <Label htmlFor="dietaryRequirements">Dietary Requirements (Optional)</Label>
-                        <Textarea
-                          id="dietaryRequirements"
-                          {...form.register("dietaryRequirements")}
-                          className="mt-1"
-                          placeholder="Any food allergies or special requirements..."
-                          rows={3}
-                        />
-                      </div>
 
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="accommodation"
-                          {...form.register("accommodation")}
-                        />
-                        <Label htmlFor="accommodation">I need accommodation assistance</Label>
-                      </div>
                     </div>
                   </div>
 
                   {/* Terms and Updates */}
                   <div className="pt-6 border-t space-y-4">
-                    <div className="flex items-start space-x-2">
-                      <Checkbox
-                        id="termsAccepted"
-                        {...form.register("termsAccepted")}
-                      />
-                      <Label htmlFor="termsAccepted" className="text-sm">
-                        I accept the terms and conditions and privacy policy *
-                      </Label>
-                    </div>
-                    {form.formState.errors.termsAccepted && (
-                      <p className="text-red-600 text-sm">{form.formState.errors.termsAccepted.message}</p>
-                    )}
 
                     <div className="flex items-center space-x-2">
                       <Checkbox

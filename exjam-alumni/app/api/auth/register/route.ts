@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
-import { createClient } from "@/lib/supabase/server";
 import { rateLimit, rateLimitConfigs } from "@/lib/rate-limit";
+import { signUp, AuthError } from "@/lib/auth/unified-auth";
+import { createClient } from "@/lib/supabase/server";
 import {
   sendEmail,
   getWelcomeEmailTemplate,
@@ -62,62 +63,28 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validatedData = registerSchema.parse(body);
 
-    const supabase = await createClient();
-
-    // Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: validatedData.email,
-      password: validatedData.password,
-      options: {
-        data: {
-          firstName: validatedData.firstName,
-          lastName: validatedData.lastName,
-        },
-      },
+    // Use unified auth system
+    const authData = await signUp(validatedData.email, validatedData.password, {
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      fullName: `${validatedData.firstName} ${validatedData.lastName}`,
+      phone: validatedData.phone,
+      graduationYear: validatedData.graduationYear,
+      currentLocation: validatedData.organization,
+      role: 'GUEST_MEMBER'
     });
 
-    if (authError) {
-      if (authError.message.includes("already registered")) {
-        return NextResponse.json({ error: "User already exists" }, { status: 400 });
-      }
-      console.error("Auth signup error:", authError);
-      return NextResponse.json({ error: authError.message }, { status: 400 });
-    }
+    const supabase = await createClient();
 
-    if (!authData.user) {
-      return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
-    }
-
-    // Create corresponding user record in User table
+    // Get the created user record
     const { data: user, error: userError } = await supabase
       .from("User")
-      .insert({
-        id: authData.user.id,
-        email: validatedData.email,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        fullName: `${validatedData.firstName} ${validatedData.lastName}`,
-        phone: validatedData.phone || null,
-        graduationYear: validatedData.graduationYear
-          ? parseInt(validatedData.graduationYear)
-          : null,
-        currentOccupation: validatedData.currentOccupation || validatedData.jobTitle || null,
-        company: validatedData.company || validatedData.organization || null,
-        relationshipToAlumni: validatedData.relationshipToAlumni || null,
-        alumniConnection: validatedData.alumniConnection || null,
-        marketingConsent: validatedData.marketingConsent,
-        role: "GUEST_MEMBER",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })
-      .select()
+      .select("*")
+      .eq("id", authData.user!.id)
       .single();
 
-    if (userError) {
-      console.error("User table insert error:", userError);
-      // Clean up auth user if profile creation fails
-      await supabase.auth.admin.deleteUser(authData.user.id);
+    if (userError || !user) {
+      console.error("Failed to fetch user record:", userError);
       return NextResponse.json({ error: "Failed to create user profile" }, { status: 500 });
     }
 
@@ -159,7 +126,7 @@ export async function POST(req: NextRequest) {
           .from("Registration")
           .insert({
             id: registrationId,
-            userId: authData.user.id,
+            userId: authData.user!.id,
             eventId: validatedData.eventId,
             ticketType: validatedData.ticketType || "REGULAR",
             specialRequests: validatedData.specialRequests || null,
@@ -247,6 +214,10 @@ export async function POST(req: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
     }
 
     return NextResponse.json({ error: "Registration failed. Please try again." }, { status: 500 });

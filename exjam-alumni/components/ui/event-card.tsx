@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, MapPin, Clock, ArrowRight, Sparkles, Users, Tag, Star, TrendingUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface Event {
   id: string;
@@ -80,30 +79,6 @@ export function EventCard({
       "group cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-white/95 via-indigo-50/50 to-purple-50/50 backdrop-blur-sm shadow-2xl hover:shadow-3xl transition-all duration-300 border border-indigo-100/50 hover:border-indigo-200/80 event-card-hover",
   };
 
-  // Color scheme based on event status
-  const getStatusColors = () => {
-    if (isPastEvent()) {
-      return {
-        badge: "bg-slate-700/90 text-white",
-        icon: "text-slate-600",
-        accent: "text-slate-500"
-      };
-    }
-    if (isEarlyBird()) {
-      return {
-        badge: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
-        icon: "text-amber-600",
-        accent: "text-amber-600"
-      };
-    }
-    return {
-      badge: "bg-gradient-to-r from-emerald-500 to-teal-500 text-white",
-      icon: "text-emerald-600",
-      accent: "text-emerald-600"
-    };
-  };
-
-  const statusColors = getStatusColors();
 
   return (
     <Link href={isPastEvent() ? `/events/${event.id}` : `/events/${event.id}/register`}>
@@ -133,38 +108,36 @@ export function EventCard({
             {/* Enhanced gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-            {/* Status badges with improved positioning */}
+            {/* Status indicators with clean typography */}
             <div className="absolute left-4 top-4 flex flex-col gap-2">
               {isPastEvent() ? (
-                <Badge className={`${statusColors.badge} backdrop-blur-sm status-badge`}>
-                  <Clock className="mr-1 h-3 w-3" />
-                  Past Event
-                </Badge>
+                <div className="rounded-full bg-slate-800/90 px-3 py-1 backdrop-blur-sm">
+                  <span className="text-xs font-bold text-white">PAST EVENT</span>
+                </div>
               ) : (
-                <Badge className={`${statusColors.badge} backdrop-blur-sm status-badge`}>
-                  <Calendar className="mr-1 h-3 w-3" />
-                  {isUpcoming() ? "Upcoming" : "Live Now"}
-                </Badge>
+                <div className="rounded-full bg-emerald-500/90 px-3 py-1 backdrop-blur-sm">
+                  <span className="text-xs font-bold text-white">
+                    {isUpcoming() ? "UPCOMING" : "LIVE NOW"}
+                  </span>
+                </div>
               )}
             </div>
 
-            {/* Early bird badge with enhanced animation */}
+            {/* Early bird indicator */}
             {isEarlyBird() && !isPastEvent() && (
               <div className="absolute right-4 top-4">
-                <Badge className="pulse-glow bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg backdrop-blur-sm status-badge">
-                  <Sparkles className="mr-1 h-3 w-3" />
-                  Early Bird
-                </Badge>
+                <div className="animate-pulse rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 shadow-lg backdrop-blur-sm">
+                  <span className="text-xs font-bold text-white">EARLY BIRD</span>
+                </div>
               </div>
             )}
 
             {/* Featured indicator */}
             {variant === "featured" && (
               <div className="absolute right-4 bottom-4">
-                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg backdrop-blur-sm status-badge">
-                  <Star className="mr-1 h-3 w-3" />
-                  Featured
-                </Badge>
+                <div className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1 shadow-lg backdrop-blur-sm">
+                  <span className="text-xs font-bold text-white">FEATURED</span>
+                </div>
               </div>
             )}
           </div>
@@ -191,42 +164,48 @@ export function EventCard({
             </p>
           )}
 
-          {/* Enhanced event details with better spacing */}
+          {/* Event details with clean typography hierarchy */}
           <div className={`mb-4 space-y-3 ${variant === "compact" ? "text-sm" : ""}`}>
-            <div className="flex items-center gap-2 text-gray-600">
-              <Calendar className="h-4 w-4 text-indigo-500" />
-              <span className="font-medium">{formatDate(event.startDate)}</span>
-              <Clock className="ml-2 h-4 w-4 text-emerald-500" />
-              <span>{formatTime(event.startDate)}</span>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                Event Date & Time
+              </p>
+              <div className="flex items-center gap-4 text-gray-700">
+                <span className="font-semibold">{formatDate(event.startDate)}</span>
+                <span className="text-gray-500">•</span>
+                <span>{formatTime(event.startDate)}</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 text-gray-600">
-              <MapPin className="h-4 w-4 text-rose-500" />
-              <span className="line-clamp-1 font-medium">{event.venue}</span>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
+                Venue
+              </p>
+              <p className="font-medium text-gray-700 line-clamp-1">{event.venue}</p>
             </div>
           </div>
 
-          {/* Enhanced tags with better visual hierarchy */}
+          {/* Clean tags without icons */}
           {event.tags?.length > 0 && variant !== "compact" && (
-            <div className="mb-4 flex flex-wrap gap-2">
-              {event.tags.slice(0, 3).map((tag, index) => (
-                <Badge 
-                  key={index} 
-                  variant="outline" 
-                  className="text-xs border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100/50 transition-colors"
-                >
-                  <Tag className="mr-1 h-3 w-3" />
-                  {tag}
-                </Badge>
-              ))}
-              {event.tags.length > 3 && (
-                <Badge 
-                  variant="outline" 
-                  className="text-xs border-gray-200 text-gray-600 bg-gray-50/50"
-                >
-                  +{event.tags.length - 3} more
-                </Badge>
-              )}
+            <div className="mb-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Categories
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {event.tags.slice(0, 3).map((tag, index) => (
+                  <span
+                    key={index}
+                    className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-100"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {event.tags.length > 3 && (
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                    +{event.tags.length - 3} more
+                  </span>
+                )}
+              </div>
             </div>
           )}
 

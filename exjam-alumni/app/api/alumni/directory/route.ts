@@ -1,145 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withOptionalAuth } from "@/lib/middleware/auth-middleware";
+import { alumniDirectoryService } from "@/lib/services/alumni-directory";
+import { withRateLimit, rateLimitConfigs } from "@/lib/rate-limit";
+import { withErrorHandling, withValidation } from "@/lib/middleware/error-middleware";
+import { createError } from "@/lib/errors/api-errors";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 
-export async function GET(req: NextRequest) {
-  try {
-    const supabase = await createClient();
+const searchParamsSchema = z.object({
+  search: z.string().optional(),
+  graduation: z.string().optional(),
+  squadron: z.enum(['GREEN', 'RED', 'PURPLE', 'YELLOW', 'DORNIER', 'PUMA']).optional(),
+  location: z.string().optional(),
+  industry: z.string().optional(),
+  mentoring: z.coerce.boolean().optional(),
+  seeking: z.coerce.boolean().optional(),
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(50).default(20),
+});
 
-    // Get search parameters
-    const { searchParams } = new URL(req.url);
-    const search = searchParams.get("search") || "";
-    const industry = searchParams.get("industry") || "";
-    const location = searchParams.get("location") || "";
-    const graduationYear = searchParams.get("graduationYear") || "";
-    const isMentoring = searchParams.get("mentoring") === "true";
-    const isSeekingMentorship = searchParams.get("seeking") === "true";
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
-    const offset = (page - 1) * limit;
+export const GET = withErrorHandling(async (req: NextRequest) => {
+  return withRateLimit(req, rateLimitConfigs.public, async () => {
+    return withOptionalAuth()(async (req, user) => {
+      // Parse and validate search parameters
+      const { searchParams } = new URL(req.url);
+      const filters = searchParamsSchema.parse({
+        search: searchParams.get("search"),
+        graduation: searchParams.get("graduation"),
+        squadron: searchParams.get("squadron"),
+        location: searchParams.get("location"),
+        industry: searchParams.get("industry"),
+        mentoring: searchParams.get("mentoring"),
+        seeking: searchParams.get("seeking"),
+        page: searchParams.get("page"),
+        limit: searchParams.get("limit"),
+      });
 
-    // Build query
-    let query = supabase
-      .from("alumni_profiles")
-      .select("*")
-      .eq("is_public", true)
-      .order("updated_at", { ascending: false });
+      // Use the optimized alumni directory service
+      const result = await alumniDirectoryService.searchAlumni(
+        filters,
+        user?.id
+      );
 
-    // Apply filters
-    if (search) {
-      query = query.or(`
-        current_company.ilike.%${search}%,
-        job_title.ilike.%${search}%,
-        bio.ilike.%${search}%
-      `);
-    }
+      return NextResponse.json(result);
+    })(req);
+  });
+});
 
-    if (industry) {
-      query = query.ilike("industry", `%${industry}%`);
-    }
+const alumniProfileSchema = z.object({
+  graduation_year: z.string().optional().transform(val => val ? parseInt(val) : null),
+  current_company: z.string().optional(),
+  job_title: z.string().optional(),
+  industry: z.string().optional(),
+  location_city: z.string().optional(),
+  location_country: z.string().default("Nigeria"),
+  bio: z.string().optional(),
+  skills: z.array(z.string()).default([]),
+  interests: z.array(z.string()).default([]),
+  linkedin_profile: z.string().url().optional().or(z.literal('')),
+  website_url: z.string().url().optional().or(z.literal('')),
+  is_available_for_mentoring: z.boolean().default(false),
+  is_seeking_mentorship: z.boolean().default(false),
+  is_available_for_networking: z.boolean().default(true),
+  is_public: z.boolean().default(true),
+});
 
-    if (location) {
-      query = query.or(`
-        location_city.ilike.%${location}%,
-        location_country.ilike.%${location}%
-      `);
-    }
-
-    if (graduationYear) {
-      query = query.eq("graduation_year", parseInt(graduationYear));
-    }
-
-    if (isMentoring) {
-      query = query.eq("is_available_for_mentoring", true);
-    }
-
-    if (isSeekingMentorship) {
-      query = query.eq("is_seeking_mentorship", true);
-    }
-
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
-
-    const { data: profiles, error } = await query;
-
-    if (error) {
-      console.error("Alumni directory error:", error);
-      return NextResponse.json({ error: "Failed to fetch alumni directory" }, { status: 500 });
-    }
-
-    // Fetch user data for each profile
-    const userIds = profiles?.map((p) => p.user_id).filter(Boolean) || [];
-    const { data: users } =
-      userIds.length > 0
-        ? await supabase
-            .from("User")
-            .select("id, firstName, lastName, fullName, profilePhoto, email")
-            .in("id", userIds)
-        : { data: [] };
-
-    // Combine profile and user data
-    const enhancedProfiles =
-      profiles?.map((profile) => ({
-        ...profile,
-        user: users?.find((u) => u.id === profile.user_id),
-      })) || [];
-
-    // Get total count for pagination
-    let countQuery = supabase
-      .from("alumni_profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("is_public", true);
-
-    // Apply same filters to count query
-    if (search) {
-      countQuery = countQuery.or(`
-        current_company.ilike.%${search}%,
-        job_title.ilike.%${search}%,
-        bio.ilike.%${search}%
-      `);
-    }
-
-    if (industry) {
-      countQuery = countQuery.ilike("industry", `%${industry}%`);
-    }
-
-    if (location) {
-      countQuery = countQuery.or(`
-        location_city.ilike.%${location}%,
-        location_country.ilike.%${location}%
-      `);
-    }
-
-    if (graduationYear) {
-      countQuery = countQuery.eq("graduation_year", parseInt(graduationYear));
-    }
-
-    if (isMentoring) {
-      countQuery = countQuery.eq("is_available_for_mentoring", true);
-    }
-
-    if (isSeekingMentorship) {
-      countQuery = countQuery.eq("is_seeking_mentorship", true);
-    }
-
-    const { count } = await countQuery;
-
-    return NextResponse.json({
-      profiles: enhancedProfiles,
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        pages: Math.ceil((count || 0) / limit),
-      },
-    });
-  } catch (error) {
-    console.error("Alumni directory API error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
+export const POST = withValidation(
+  alumniProfileSchema,
+  async (req: NextRequest, validatedData) => {
     const supabase = await createClient();
 
     // Check authentication
@@ -149,29 +77,8 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw createError.unauthorized('Authentication required to create profile', req.nextUrl.pathname);
     }
-
-    const body = await req.json();
-
-    // Validate required fields
-    const {
-      graduation_year,
-      current_company,
-      job_title,
-      industry,
-      location_city,
-      location_country,
-      bio,
-      skills,
-      interests,
-      linkedin_profile,
-      website_url,
-      is_available_for_mentoring,
-      is_seeking_mentorship,
-      is_available_for_networking,
-      is_public,
-    } = body;
 
     // Check if profile already exists
     const { data: existingProfile, error: checkError } = await supabase
@@ -181,27 +88,12 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (checkError && checkError.code !== "PGRST116") {
-      console.error("Profile check error:", checkError);
-      return NextResponse.json({ error: "Failed to check profile" }, { status: 500 });
+      throw createError.databaseError('profile check', checkError.message, req.nextUrl.pathname);
     }
 
     const profileData = {
       user_id: user.id,
-      graduation_year: graduation_year ? parseInt(graduation_year) : null,
-      current_company,
-      job_title,
-      industry,
-      location_city,
-      location_country: location_country || "Nigeria",
-      bio,
-      skills: Array.isArray(skills) ? skills : [],
-      interests: Array.isArray(interests) ? interests : [],
-      linkedin_profile,
-      website_url,
-      is_available_for_mentoring: !!is_available_for_mentoring,
-      is_seeking_mentorship: !!is_seeking_mentorship,
-      is_available_for_networking: is_available_for_networking !== false,
-      is_public: is_public !== false,
+      ...validatedData,
       updated_at: new Date().toISOString(),
     };
 
@@ -231,16 +123,16 @@ export async function POST(req: NextRequest) {
     }
 
     if (result.error) {
-      console.error("Profile save error:", result.error);
-      return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+      throw createError.databaseError(
+        existingProfile ? 'profile update' : 'profile creation', 
+        result.error.message, 
+        req.nextUrl.pathname
+      );
     }
 
     return NextResponse.json({
       message: existingProfile ? "Profile updated successfully" : "Profile created successfully",
       profile: result.data,
     });
-  } catch (error) {
-    console.error("Alumni profile API error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+);

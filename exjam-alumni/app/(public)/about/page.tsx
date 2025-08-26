@@ -15,7 +15,6 @@ import {
   GraduationCap,
   Building,
   Star,
-  Sparkles,
   ChevronRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -387,11 +386,9 @@ export default function AboutPage() {
                   <div className="text-center">
                     <h3 className="text-lg font-bold text-gray-900">{leader.name}</h3>
                     <p className="mb-2 text-sm text-gray-600">{leader.role}</p>
-                    <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1">
-                      <span className="text-xs font-semibold text-blue-700">
-                        {leader.squadron} {leader.year}
-                      </span>
-                    </div>
+                    <p className="text-xs text-blue-700">
+                      {leader.squadron} {leader.year}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -517,10 +514,6 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-black opacity-20"></div>
         <div className="container relative">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2 backdrop-blur">
-              <Sparkles className="h-4 w-4 text-yellow-400" />
-              <span className="text-sm font-semibold">Join Today</span>
-            </div>
 
             <h2 className="mb-6 text-4xl font-bold md:text-5xl">Join The EXJAM Association</h2>
             <p className="mb-10 text-xl text-blue-100">

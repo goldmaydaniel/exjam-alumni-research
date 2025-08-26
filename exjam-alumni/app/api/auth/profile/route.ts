@@ -1,61 +1,50 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth, AuthError } from "@/lib/auth/unified-auth";
+import { queries, db } from "@/lib/db/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    // Use Supabase Auth only
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
+    const user = await requireAuth(req);
 
-    if (error || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
-    const userId = user.id;
-
-    // Get user profile from database
-    const profile = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        fullName: true,
-        serviceNumber: true,
-        squadron: true,
-        phone: true,
-        chapter: true,
-        currentLocation: true,
-        emergencyContact: true,
-        graduationYear: true,
-        currentOccupation: true,
-        company: true,
-        role: true,
-        emailVerified: true,
-        createdAt: true,
-        _count: {
-          select: {
-            Registration: true,
-            Payment: true,
-            Ticket: true,
-          },
-        },
-      },
-    });
+    // Get user profile from database using our queries helper
+    const profile = await queries.getUserById(user.id);
 
     if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    return NextResponse.json(profile);
+    // Return safe user data
+    return NextResponse.json({
+      id: profile.id,
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      fullName: profile.fullName,
+      serviceNumber: profile.serviceNumber,
+      squadron: profile.squadron,
+      phone: profile.phone,
+      chapter: profile.chapter,
+      currentLocation: profile.currentLocation,
+      emergencyContact: profile.emergencyContact,
+      graduationYear: profile.graduationYear,
+      currentOccupation: profile.currentOccupation,
+      company: profile.company,
+      role: profile.role,
+      emailVerified: profile.emailVerified,
+      profilePhoto: profile.profilePhoto,
+      bio: profile.bio,
+      createdAt: profile.createdAt,
+      registrationCount: profile.Registration.length,
+      paymentCount: profile.Payment.length,
+      ticketCount: profile.Ticket.length,
+    });
   } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
+
     console.error("Get profile error:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
   }
@@ -63,24 +52,12 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    // Use Supabase Auth only
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
-    const userId = user.id;
-
+    const user = await requireAuth(req);
     const body = await req.json();
 
-    // Update user profile in database
-    const updatedProfile = await prisma.user.update({
-      where: { id: userId },
+    // Update user profile in database using our db helper
+    const updatedProfile = await db.user.update({
+      where: { id: user.id },
       data: {
         firstName: body.firstName,
         lastName: body.lastName,
@@ -94,6 +71,7 @@ export async function PUT(req: NextRequest) {
         emergencyContact: body.emergencyContact,
         currentOccupation: body.currentOccupation,
         company: body.company,
+        bio: body.bio,
         updatedAt: new Date(),
       },
       select: {
@@ -111,13 +89,20 @@ export async function PUT(req: NextRequest) {
         graduationYear: true,
         currentOccupation: true,
         company: true,
+        bio: true,
         role: true,
         emailVerified: true,
+        profilePhoto: true,
+        updatedAt: true,
       },
     });
 
     return NextResponse.json(updatedProfile);
   } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
+
     console.error("Update profile error:", error);
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
   }

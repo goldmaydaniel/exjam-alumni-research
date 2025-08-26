@@ -218,6 +218,14 @@ export const rateLimitConfigs = {
     keyGenerator: userKeyGenerator,
   },
 
+  /** Registration endpoints */
+  registration: {
+    maxRequests: 3,
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    blockDurationMs: 10 * 60 * 1000, // 10 minutes block
+    keyGenerator: userKeyGenerator,
+  },
+
   /** General API endpoints */
   api: {
     maxRequests: 100,

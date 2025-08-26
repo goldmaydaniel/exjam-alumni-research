@@ -392,3 +392,70 @@ async function calculateConversionRate() {
 
   return totalRegistrations > 0 ? (paidRegistrations / totalRegistrations) * 100 : 0;
 }
+
+// POST method for tracking analytics events
+export async function POST(request: NextRequest) {
+  try {
+    const data = await request.json();
+
+    // Validate required fields
+    if (!data.event || !data.sessionId) {
+      return NextResponse.json(
+        { error: 'Missing required fields: event, sessionId' },
+        { status: 400 }
+      );
+    }
+
+    // Add server-side metadata
+    const analyticsData = {
+      ...data,
+      serverTimestamp: Date.now(),
+      ip: request.headers.get('x-forwarded-for') || 
+          request.headers.get('x-real-ip') ||
+          request.ip,
+      userAgent: request.headers.get('user-agent'),
+      referer: request.headers.get('referer'),
+    };
+
+    // In development, just log the data
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Analytics Event:', {
+        event: data.event,
+        userId: data.userId,
+        sessionId: data.sessionId,
+        properties: data.properties,
+        timestamp: new Date(data.timestamp || Date.now()).toISOString(),
+      });
+      
+      return NextResponse.json({ success: true, logged: true });
+    }
+
+    // Log important events
+    if (data.event.includes('registration') || 
+        data.event.includes('payment') || 
+        data.event.includes('error')) {
+      console.log('🔥 Important Event:', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: data.event,
+        userId: data.userId,
+        sessionId: data.sessionId,
+        properties: data.properties,
+        metadata: {
+          page: data.page,
+          viewport: data.viewport,
+          connection: data.connection,
+          ip: analyticsData.ip?.split(',')[0]?.trim(),
+        },
+      }, null, 2));
+    }
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error('Analytics API error:', error);
+    return NextResponse.json(
+      { error: 'Failed to process analytics data' },
+      { status: 500 }
+    );
+  }
+}
