@@ -4,8 +4,8 @@ import { withAuth } from "@/lib/middleware/auth";
 
 export const dynamic = 'force-dynamic';
 
-export const POST = withAuth(
-  async (request: NextRequest, { params, user }: { params: { id: string }; user: any }) => {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  return withAuth(async (user: any) => {
     // Check admin access
     if (user.role !== "ADMIN" && user.role !== "ORGANIZER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -33,5 +33,5 @@ export const POST = withAuth(
       console.error("Error sending reply:", error);
       return NextResponse.json({ error: "Failed to send reply" }, { status: 500 });
     }
-  }
-);
+  })(request);
+}

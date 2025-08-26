@@ -182,9 +182,6 @@ export function SimpleFooter() {
             © {new Date().getFullYear()} The EXJAM Association • Ex-Junior Airmen • AFMS Jos. All
             rights reserved.
           </p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            "Strive to Excel" • Promoting Excellence and Unity Among Alumni
-          </p>
         </div>
       </div>
     </footer>
